@@ -9,6 +9,9 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Divider,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -24,12 +27,14 @@ import GoogleLogo from '../assets/google-logo.svg';
 import TwitterLogo from '../assets/twitter-logo.svg';
 
 const theme = createTheme();
+
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
@@ -75,6 +80,9 @@ const SignUp: React.FC = () => {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      setEmail(''); // Clear email field
+      setPassword(''); // Clear password field
+      setSuccess(true); // Show success message
       navigate('/dashboard');
     } catch (error) {
       console.error('Error registering: ', error);
@@ -95,6 +103,7 @@ const SignUp: React.FC = () => {
           justifyContent: 'center',
           alignItems: 'center',
           position: 'relative',
+          padding: 2,
         }}
       >
         <CssBaseline />
@@ -106,143 +115,93 @@ const SignUp: React.FC = () => {
             overflow: 'hidden',
             boxShadow: 3,
             backgroundColor: '#1e1e1e',
-            padding: 3,
+            padding: 4,
             textAlign: 'center',
           }}
         >
           <Typography
             variant='h4'
-            sx={{ color: 'white', fontWeight: 700, mb: 2 }}
+            sx={{
+              color: 'white',
+              fontWeight: 700,
+              mb: 3,
+              fontFamily: 'Fairdisplay',
+            }}
           >
-            Create an account
+            ChronoCare
           </Typography>
           <Typography
             variant='body1'
-            sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 3 }}
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              mb: 3,
+              textAlign: 'left',
+              fontSize: '0.825rem',
+            }}
           >
-            Sign up with
+            Đăng nhập để ghi lại chỉ số huyết áp và đường huyết.
           </Typography>
           <Box
-            sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 3 }}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: 2,
+              mb: 3,
+            }}
           >
             <Button
               variant='contained'
               sx={{
-                width: '45%',
+                width: '100%',
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 color: 'white',
                 textTransform: 'none',
+                padding: '10px 0',
                 '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
               }}
               onClick={signInWithGoogle}
             >
               <img
                 src={GoogleLogo}
-                alt='Google'
+                alt='Google logo'
                 style={{ width: 20, marginRight: 8 }}
               />
-              Google
+              Đăng nhập với Google
             </Button>
             <Button
               variant='contained'
               sx={{
-                width: '45%',
+                width: '100%',
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 color: 'white',
                 textTransform: 'none',
+                padding: '10px 0',
                 '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
               }}
               onClick={signInWithTwitter}
             >
               <img
                 src={TwitterLogo}
-                alt='Facebook'
+                alt='Twitter logo'
                 style={{ width: 20, marginRight: 8 }}
               />
-              Twitter
+              Đăng nhập với Twitter
             </Button>
           </Box>
-          <Box sx={{ mb: 3 }}>
-            <TextField
-              fullWidth
-              margin='normal'
-              variant='standard'
-              placeholder='Email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              InputProps={{ style: { color: 'white' } }}
-              sx={{
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: 'rgba(255, 255, 255, 0.5)',
-                },
-                '&:hover .MuiInput-underline:before': {
-                  borderBottomColor: 'white',
-                },
-                '&.Mui-focused .MuiInput-underline:after': {
-                  borderBottomColor: 'white',
-                },
-              }}
-            />
-            <TextField
-              fullWidth
-              margin='normal'
-              variant='standard'
-              placeholder='Password'
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                style: { color: 'white' },
-                endAdornment: (
-                  <InputAdornment position='end'>
-                    <IconButton
-                      onClick={handlePasswordVisibility}
-                      sx={{
-                        color: showPassword
-                          ? 'white'
-                          : 'rgba(255, 255, 255, 0.5)',
-                      }}
-                    >
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: 'rgba(255, 255, 255, 0.5)',
-                },
-                '&:hover .MuiInput-underline:before': {
-                  borderBottomColor: 'white',
-                },
-                '&.Mui-focused .MuiInput-underline:after': {
-                  borderBottomColor: 'white',
-                },
-              }}
-            />
-          </Box>
-          {error && (
-            <Typography variant='body2' sx={{ color: 'red', mb: 2 }}>
-              {error}
-            </Typography>
-          )}
-          <Button
-            fullWidth
-            variant='contained'
-            color='primary'
+
+          <Typography
+            variant='body2'
             sx={{
-              mt: 3,
-              mb: 2,
-              backgroundColor: '#1a73e8',
-              color: 'white',
-              textTransform: 'none',
-              fontWeight: 'bold',
-              '&:hover': { backgroundColor: '#1669c1' },
+              color: 'rgba(255, 255, 255, 0.7)',
+              mt: 1,
+              mb: 1,
+              fontSize: '0.725rem',
+              textAlign: 'left',
             }}
-            onClick={handleRegister}
           >
-            Register
-          </Button>
+            Bạn chưa có tài khoản? Đăng ký
+          </Typography>
         </Box>
       </Container>
     </ThemeProvider>
