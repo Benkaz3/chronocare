@@ -1,0 +1,53 @@
+
+:root {
+  --text: #0a0413;
+  --background: #f7f3fd;
+  --primary: #6E2594;
+  --secondary: #ECD444;
+  --accent: #dfbf61;
+  --gradient: linear-gradient(to right, #E9E4F0, #D3CCE3);
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: var(--background);
+  color: var(--text);
+}
+
+h1, h2, h3 {
+  color: var(--primary);
+}
+
+button {
+  background-color: var(--secondary);
+  color: white;
+}
+
+a {
+  color: var(--primary);
+}
+
+.gradient-background {
+  background: var(--gradient);
+}
+
+/* Custom font for logo text */
+@font-face {
+  font-family: 'Playfair';
+  src: url('./assets/fonts/Playfair_144pt-ExtraBold.ttf') format('truetype');
+  font-weight: 900; /* Corresponds to ExtraBold */
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Nickainley';
+  src: url('./assets/fonts/Nickainley-Normal.otf') format('truetype');
+  font-weight: 900; /* Corresponds to ExtraBold */
+  font-style: normal;
+}
+
+/* hide central value */
+
+.semicircle-gauge .value-text {
+  display: none; 
+}
