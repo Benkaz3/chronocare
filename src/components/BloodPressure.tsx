@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Container, Typography, Box, Button, Grid, Paper } from '@mui/material';
 import { AccessTime, DateRange } from '@mui/icons-material';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
-import {
-  addBloodPressureData,
-  getBloodPressureData,
-  BloodPressureData,
-} from '../firebase';
+import { addBloodPressureData, BloodPressureData } from '../firebase';
 import BloodPressureGauge from './BloodPressureGauge';
 import StatusDisplay from './StatusDisplay';
 import BloodPressureForm from './BloodPressureForm';
@@ -22,7 +17,6 @@ const BloodPressure: React.FC = () => {
     new Date().toLocaleTimeString().slice(0, 5)
   );
   const [trendData, setTrendData] = useState<BloodPressureData[]>([]);
-  const [user, setUser] = useState<User | null>(null);
 
   const statusColors = {
     normal: '#5BE12C',
@@ -56,31 +50,6 @@ const BloodPressure: React.FC = () => {
   };
 
   const status = getStatus(systolic, diastolic);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        fetchData();
-      } else {
-        console.log('No user is logged in');
-        setUser(null);
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup subscription on unmount
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const data = await getBloodPressureData();
-      setTrendData(data);
-      console.log('Fetched Blood Pressure Data:', data);
-    } catch (error) {
-      console.error('Error fetching blood pressure data:', error);
-    }
-  };
 
   const handleAddValues = async () => {
     try {

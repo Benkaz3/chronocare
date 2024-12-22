@@ -15,7 +15,6 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../firebase';
-import { useAuth } from '../context/useAuth';
 import GoogleLogo from '../assets/google-logo.svg';
 import FacebookLogo from '../assets/facebook-logo.svg';
 
@@ -23,7 +22,6 @@ const theme = createTheme();
 
 const GoogleSignIn: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const signInWithGoogle = async () => {

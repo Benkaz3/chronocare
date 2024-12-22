@@ -17,16 +17,15 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   createUserWithEmailAndPassword,
+  TwitterAuthProvider,
 } from 'firebase/auth';
 import { auth } from '../firebase';
-import { useAuth } from '../context/useAuth';
 import GoogleLogo from '../assets/google-logo.svg';
 import TwitterLogo from '../assets/twitter-logo.svg';
 
 const theme = createTheme();
 const SignUp: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,6 +39,17 @@ const SignUp: React.FC = () => {
     } catch (error) {
       console.error('Error signing in: ', error);
       setError('Failed to sign in with Google.');
+    }
+  };
+
+  const signInWithTwitter = async () => {
+    const provider = new TwitterAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error signing in: ', error);
+      setError('Failed to sign in with Twitter.');
     }
   };
 
@@ -142,6 +152,7 @@ const SignUp: React.FC = () => {
                 textTransform: 'none',
                 '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
               }}
+              onClick={signInWithTwitter}
             >
               <img
                 src={TwitterLogo}
