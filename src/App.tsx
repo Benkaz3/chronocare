@@ -7,6 +7,8 @@ import { AuthProvider } from './context/AuthProvider';
 import PrivateRoute from './components/PrivateRoute';
 import { CssBaseline } from '@mui/material';
 import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -14,6 +16,7 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path='/' element={<SignIn />} />
+          <Route path='/dang-ky' element={<SignUp />} />
           <Route element={<PrivateRoute />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/blood-pressure' element={<BloodPressure />} />
