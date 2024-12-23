@@ -142,7 +142,7 @@ const SignUp: React.FC = () => {
               fontFamily: 'Fairdisplay',
             }}
           >
-            Đăng ký ChronoCare
+            ChronoCare
           </Typography>
           <TextField
             variant='outlined'

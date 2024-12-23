@@ -8,6 +8,7 @@ import PrivateRoute from './components/PrivateRoute';
 import { CssBaseline } from '@mui/material';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
+import ForgotPassword from './components/ForgotPassword';
 
 const App: React.FC = () => {
   return (
@@ -17,6 +18,7 @@ const App: React.FC = () => {
         <Routes>
           <Route path='/' element={<SignIn />} />
           <Route path='/dang-ky' element={<SignUp />} />
+          <Route path='/quen-mat-khau' element={<ForgotPassword />} />
           <Route element={<PrivateRoute />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/blood-pressure' element={<BloodPressure />} />

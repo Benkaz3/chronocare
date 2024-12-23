@@ -8,12 +8,15 @@ import {
   Container,
   Snackbar,
   Alert,
+  Link,
+  TextField,
 } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
   GoogleAuthProvider,
   signInWithPopup,
   TwitterAuthProvider,
+  signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import GoogleLogo from '../assets/google-logo.svg';
@@ -24,6 +27,8 @@ const theme = createTheme();
 const SignIn: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
 
   const handleAuthProviderSignIn = async (
     provider: GoogleAuthProvider | TwitterAuthProvider,
@@ -35,6 +40,16 @@ const SignIn: React.FC = () => {
     } catch (err) {
       console.error(`Error signing in with ${providerName}: `, err);
       setError(`Failed to sign in with ${providerName}.`);
+    }
+  };
+
+  const handleEmailPasswordSignIn = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Error signing in with email and password: ', err);
+      setError('Failed to sign in with email and password.');
     }
   };
 
@@ -92,6 +107,52 @@ const SignIn: React.FC = () => {
             Đăng nhập để ghi lại chỉ số huyết áp và đường huyết.
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+            <TextField
+              variant='outlined'
+              fullWidth
+              label='Email'
+              type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              sx={{ backgroundColor: 'white', borderRadius: 1 }}
+            />
+            <TextField
+              variant='outlined'
+              fullWidth
+              label='Password'
+              type='password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              sx={{ backgroundColor: 'white', borderRadius: 1 }}
+            />
+            <Button
+              variant='contained'
+              sx={{
+                width: '100%',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                color: 'white',
+                textTransform: 'none',
+                padding: '10px 0',
+                '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
+              }}
+              onClick={handleEmailPasswordSignIn}
+            >
+              Đăng nhập với Email
+            </Button>
+            <Link
+              component='button'
+              variant='body2'
+              onClick={() => navigate('/quen-mat-khau')}
+              sx={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                textDecoration: 'underline',
+                fontSize: '0.725rem',
+                textAlign: 'left',
+                mb: 4,
+              }}
+            >
+              Quên mật khẩu?
+            </Link>
             <Button
               variant='contained'
               sx={{
@@ -145,7 +206,41 @@ const SignIn: React.FC = () => {
               textAlign: 'left',
             }}
           >
-            Bạn chưa có tài khoản? Đăng ký
+            Bạn chưa có tài khoản?{' '}
+            <Link
+              component='button'
+              variant='body2'
+              onClick={() => navigate('/dang-ky')}
+              sx={{
+                color: 'inherit',
+                textDecoration: 'underline',
+                fontSize: '0.725rem',
+              }}
+            >
+              Đăng ký
+            </Link>
+          </Typography>
+          <Typography
+            variant='body2'
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              mt: 2,
+              fontSize: '0.725rem',
+              textAlign: 'left',
+            }}
+          >
+            Khi đăng ký và đăng nhập, bạn tự động đồng ý với{' '}
+            <Link
+              href='/terms-and-conditions'
+              sx={{
+                color: 'inherit',
+                textDecoration: 'underline',
+                fontSize: '0.725rem',
+              }}
+            >
+              điều khoản sử dụng dịch vụ của chúng tôi.
+            </Link>
+            .
           </Typography>
         </Box>
         <Snackbar
