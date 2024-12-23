@@ -6,20 +6,13 @@ import {
   Box,
   Typography,
   Container,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Divider,
   Snackbar,
   Alert,
 } from '@mui/material';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
   GoogleAuthProvider,
   signInWithPopup,
-  createUserWithEmailAndPassword,
   TwitterAuthProvider,
 } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -28,66 +21,25 @@ import TwitterLogo from '../assets/twitter-logo.svg';
 
 const theme = createTheme();
 
-const SignUp: React.FC = () => {
+const SignIn: React.FC = () => {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string>('');
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
+  const handleAuthProviderSignIn = async (
+    provider: GoogleAuthProvider | TwitterAuthProvider,
+    providerName: string
+  ) => {
     try {
       await signInWithPopup(auth, provider);
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Error signing in: ', error);
-      setError('Failed to sign in with Google.');
+    } catch (err) {
+      console.error(`Error signing in with ${providerName}: `, err);
+      setError(`Failed to sign in with ${providerName}.`);
     }
   };
 
-  const signInWithTwitter = async () => {
-    const provider = new TwitterAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Error signing in: ', error);
-      setError('Failed to sign in with Twitter.');
-    }
-  };
-
-  const handlePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const validateInputs = () => {
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address.');
-      return false;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return false;
-    }
+  const handleCloseSnackbar = () => {
     setError('');
-    return true;
-  };
-
-  const handleRegister = async () => {
-    if (!validateInputs()) return;
-
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      setEmail(''); // Clear email field
-      setPassword(''); // Clear password field
-      setSuccess(true); // Show success message
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Error registering: ', error);
-      setError('Failed to register. Please try again.');
-    }
   };
 
   return (
@@ -102,7 +54,6 @@ const SignUp: React.FC = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          position: 'relative',
           padding: 2,
         }}
       >
@@ -112,7 +63,6 @@ const SignUp: React.FC = () => {
             width: '100%',
             maxWidth: 400,
             borderRadius: 2,
-            overflow: 'hidden',
             boxShadow: 3,
             backgroundColor: '#1e1e1e',
             padding: 4,
@@ -141,15 +91,7 @@ const SignUp: React.FC = () => {
           >
             Đăng nhập để ghi lại chỉ số huyết áp và đường huyết.
           </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              gap: 2,
-              mb: 3,
-            }}
-          >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
             <Button
               variant='contained'
               sx={{
@@ -160,7 +102,9 @@ const SignUp: React.FC = () => {
                 padding: '10px 0',
                 '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
               }}
-              onClick={signInWithGoogle}
+              onClick={() =>
+                handleAuthProviderSignIn(new GoogleAuthProvider(), 'Google')
+              }
             >
               <img
                 src={GoogleLogo}
@@ -179,7 +123,9 @@ const SignUp: React.FC = () => {
                 padding: '10px 0',
                 '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
               }}
-              onClick={signInWithTwitter}
+              onClick={() =>
+                handleAuthProviderSignIn(new TwitterAuthProvider(), 'Twitter')
+              }
             >
               <img
                 src={TwitterLogo}
@@ -189,7 +135,6 @@ const SignUp: React.FC = () => {
               Đăng nhập với Twitter
             </Button>
           </Box>
-
           <Typography
             variant='body2'
             sx={{
@@ -203,9 +148,23 @@ const SignUp: React.FC = () => {
             Bạn chưa có tài khoản? Đăng ký
           </Typography>
         </Box>
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity='error'
+            sx={{ width: '100%' }}
+          >
+            {error}
+          </Alert>
+        </Snackbar>
       </Container>
     </ThemeProvider>
   );
 };
 
-export default SignUp;
+export default SignIn;

@@ -1,22 +1,20 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import GoogleSignIn from './components/GoogleSignIn';
 import Dashboard from './components/Dashboard';
 import BloodPressure from './components/BloodPressure';
 import Test from './components/TestFirestoreAdd';
 import { AuthProvider } from './context/AuthProvider';
 import PrivateRoute from './components/PrivateRoute';
 import { CssBaseline } from '@mui/material';
-import SignUp from './components/SignUp';
-
+import SignIn from './components/SignIn';
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path='/' element={<GoogleSignIn />} />
-          <Route path='/dang-ky' element={<SignUp />} />
+          <Route path='/dang-nhap' element={<SignIn />} />
+          <Route path='/' element={<div>Trang chu</div>} />
           <Route element={<PrivateRoute />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/blood-pressure' element={<BloodPressure />} />
