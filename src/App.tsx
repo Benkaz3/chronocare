@@ -13,8 +13,7 @@ const App: React.FC = () => {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path='/dang-nhap' element={<SignIn />} />
-          <Route path='/' element={<div>Trang chu</div>} />
+          <Route path='/' element={<SignIn />} />
           <Route element={<PrivateRoute />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/blood-pressure' element={<BloodPressure />} />
