@@ -1,7 +1,6 @@
 // src/pages/AuthPage.tsx
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
 import {
   CssBaseline,
   Box,
@@ -13,39 +12,21 @@ import {
   Divider,
   Fade,
 } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import AuthProviderButtons from '../components/AuthProviderButtons';
 import AuthForm from '../components/AuthForm';
 import useAuth from '../hooks/useAuth'; // Import the custom hook
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: 'rgba(255, 255, 255, 0.7)',
-    },
-    background: {
-      default: '#121212',
-      paper: '#1e1e1e',
-    },
-    text: {
-      primary: '#ffffff',
-      secondary: 'rgba(255, 255, 255, 0.7)',
-    },
-  },
-});
+import theme from '../theme';
 
 const AuthPage: React.FC = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [tab, setTab] = useState(0);
   const [fade, setFade] = useState(true);
 
   // Utilize the custom hook
   const {
     message,
-    setMessage,
     loading,
     signInWithProvider,
     signUpWithEmail,
@@ -53,16 +34,25 @@ const AuthPage: React.FC = () => {
     resetAuthMessage,
   } = useAuth();
 
+  // Reference to the tab panel for focus management
+  const tabPanelRef = useRef<HTMLDivElement>(null);
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setFade(false);
     setTimeout(() => {
       setTab(newValue);
       setFade(true);
       resetAuthMessage();
+      // Reset form fields and errors when switching tabs
+      setEmail('');
+      setPassword('');
+      // Shift focus to the tab panel
+      tabPanelRef.current?.focus();
     }, 300); // Duration should match the Fade timeout
   };
 
   const handleSubmit = () => {
+    if (loading) return; // Prevent multiple submissions
     if (tab === 0) {
       signInWithEmail(email, password);
     } else {
@@ -87,6 +77,7 @@ const AuthPage: React.FC = () => {
       >
         <CssBaseline />
         <Box
+          component='div'
           sx={{
             width: '100%',
             maxWidth: 400,
@@ -100,30 +91,27 @@ const AuthPage: React.FC = () => {
           <Typography
             variant='h4'
             sx={{
-              color: theme.palette.text.primary,
-              fontWeight: 700,
               mb: 3,
-              fontFamily: 'Fairdisplay',
               textAlign: 'left',
             }}
+            tabIndex={0}
           >
             ChronoCare
           </Typography>
           <Typography
             variant='body2'
             sx={{
-              color: theme.palette.text.secondary,
               mb: 1,
               textAlign: 'left',
             }}
           >
-            Quick sign in with Google or Twitter
+            Đăng nhập hoả tốc với
           </Typography>
           <AuthProviderButtons
             onSignIn={signInWithProvider}
             disabled={loading}
           />
-          <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.5)', mb: 3 }} />
+          <Divider sx={{ borderColor: '#bfbfbf', mb: 3 }} />
           {/* Tabs for switching between Log In and Sign Up */}
           <Tabs
             value={tab}
@@ -133,21 +121,39 @@ const AuthPage: React.FC = () => {
             textColor='primary'
             indicatorColor='primary'
             aria-label='Authentication Tabs'
+            role='tablist'
           >
-            <Tab label='Log In' id='tab-0' aria-controls='tabpanel-0' />
-            <Tab label='Sign Up' id='tab-1' aria-controls='tabpanel-1' />
+            <Tab
+              label='Đăng nhập'
+              id='tab-0'
+              aria-controls='tabpanel-0'
+              aria-selected={tab === 0}
+              role='tab'
+            />
+            <Tab
+              label='Đăng ký'
+              id='tab-1'
+              aria-controls='tabpanel-1'
+              aria-selected={tab === 1}
+              role='tab'
+            />
           </Tabs>
           {/* Transition Animation */}
           <Fade in={fade} timeout={300}>
-            <Box>
+            <Box
+              component='div'
+              role='tabpanel'
+              id={`tabpanel-${tab}`}
+              aria-labelledby={`tab-${tab}`}
+              tabIndex={-1}
+              ref={tabPanelRef}
+            >
               <AuthForm
                 tab={tab}
                 email={email}
                 setEmail={setEmail}
                 password={password}
                 setPassword={setPassword}
-                confirmPassword={confirmPassword}
-                setConfirmPassword={setConfirmPassword}
                 onSubmit={handleSubmit}
                 message={message}
                 onCloseMessage={resetAuthMessage}
@@ -162,29 +168,18 @@ const AuthPage: React.FC = () => {
                   textAlign: 'center',
                 }}
               >
-                By signing up you agree to our{' '}
+                Bằng việc đăng ký, bạn đồng ý với{' '}
                 <Link
                   href='/terms-and-conditions'
-                  sx={{
-                    color: 'inherit',
-                    textDecoration: 'underline',
-                    fontSize: '0.725rem',
-                  }}
+                  aria-label='Terms of Service'
                 >
-                  Terms of Service
+                  điều khoản dịch vụ
                 </Link>{' '}
-                and{' '}
-                <Link
-                  href='/privacy-policy'
-                  sx={{
-                    color: 'inherit',
-                    textDecoration: 'underline',
-                    fontSize: '0.725rem',
-                  }}
-                >
-                  Privacy Policy
-                </Link>
-                .
+                và{' '}
+                <Link href='/privacy-policy' aria-label='Privacy Policy'>
+                  chính sách bảo mật
+                </Link>{' '}
+                của chúng tôi.
               </Typography>
             </Box>
           </Fade>

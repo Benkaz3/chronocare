@@ -11,69 +11,75 @@ import {
   UserCredential,
 } from 'firebase/auth';
 import { auth } from '../firebase';
+import { Typography } from '@mui/material';
 
+// Define specific Firebase Auth error codes
+type FirebaseAuthErrorCode =
+  | 'auth/email-already-in-use'
+  | 'auth/invalid-email'
+  | 'auth/weak-password'
+  | 'auth/user-not-found'
+  | 'auth/wrong-password'
+  | 'auth/user-disabled'
+  | 'auth/too-many-requests'
+  | 'auth/email-verified'
+  | 'auth/network-request-failed';
+
+// Interface for authentication messages
 interface AuthMessage {
   type: 'success' | 'error';
   text: React.ReactNode;
 }
+
+// Mapping of Firebase error codes to user-friendly messages
+const errorMessages: Record<FirebaseAuthErrorCode, React.ReactNode> = {
+  'auth/email-already-in-use':
+    'Email đã được sử dụng. Vui lòng đăng nhập hoặc sử dụng email khác.',
+  'auth/invalid-email': 'Email không đúng.',
+  'auth/weak-password': 'Mật khẩu yếu. Vui lòng đặt mật khẩu mạnh hơn.',
+  'auth/user-not-found': 'Không có người dùng với email này.',
+  'auth/wrong-password': 'Sai mật khẩu.',
+  'auth/user-disabled':
+    'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.',
+  'auth/too-many-requests':
+    'Quá nhiều lần cố đăng nhập. Vui lòng thử lại sau vài phút.',
+  'auth/email-verified': 'Vui lòng xác minh email của bạn trước khi đăng nhập.',
+  'auth/network-request-failed':
+    'Lỗi mạng. Vui lòng kiểm tra kết nối của bạn và thử lại.',
+};
 
 const useAuth = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState<AuthMessage | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleAuthError = (err: any) => {
+  const handleAuthError = (err: { code: FirebaseAuthErrorCode }) => {
     console.error('Authentication Error:', err);
-    if (err.code === 'auth/email-already-in-use') {
-      setMessage({
-        type: 'error',
-        text: (
-          <>
-            Email is already in use. Please{' '}
-            <button
-              onClick={() => {
-                setMessage(null);
-                navigate('/login'); // Adjust the navigation as needed
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'inherit',
-                textDecoration: 'underline',
-                cursor: 'pointer',
-                padding: 0,
-                font: 'inherit',
-              }}
-            >
-              log in
-            </button>
-            .
-          </>
-        ),
-      });
-    } else if (err.code === 'auth/invalid-email') {
-      setMessage({ type: 'error', text: 'Invalid email address.' });
-    } else if (err.code === 'auth/weak-password') {
-      setMessage({
-        type: 'error',
-        text: 'Password is too weak. Please choose a stronger password.',
-      });
-    } else if (err.code === 'auth/user-not-found') {
-      setMessage({
-        type: 'error',
-        text: 'No user found with this email.',
-      });
-    } else if (err.code === 'auth/wrong-password') {
-      setMessage({
-        type: 'error',
-        text: 'Incorrect password.',
-      });
-    } else {
-      setMessage({
-        type: 'error',
-        text: 'Authentication failed. Please try again.',
-      });
-    }
+    const userFriendlyMessage =
+      errorMessages[err.code] ||
+      'Đăng nhập không thành công. Vui lòng thử lại.';
+    setMessage({ type: 'error', text: userFriendlyMessage });
+  };
+
+  const handleSuccess = (
+    messageText: string,
+    redirectPath: string,
+    delay = 1500
+  ) => {
+    setMessage({
+      type: 'success',
+      text: (
+        <>
+          {messageText}{' '}
+          <Typography component='span' variant='body2'>
+            Đang chuyển hướng...
+          </Typography>
+        </>
+      ),
+    });
+    setTimeout(() => {
+      navigate(redirectPath);
+    }, delay);
   };
 
   const signInWithProvider = async (
@@ -83,13 +89,13 @@ const useAuth = () => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      navigate('/dashboard'); // Redirect after successful sign-in
+      handleSuccess(`Đăng nhập thành công với ${providerName}!`, '/dashboard');
       return result;
     } catch (err: any) {
-      console.error(`Error signing in with ${providerName}:`, err);
+      console.error(`Đăng nhập không thành công với ${providerName}:`, err);
       setMessage({
         type: 'error',
-        text: `Cannot sign in with ${providerName}. Please try again later.`,
+        text: `Không thể đăng nhập với ${providerName}. Thử lại sau.`,
       });
       return null;
     } finally {
@@ -110,9 +116,8 @@ const useAuth = () => {
       );
       setMessage({
         type: 'success',
-        text: 'Registration successful! Redirecting to dashboard...',
+        text: 'Đăng ký thành công! Chuyển hướng tới dashboard...',
       });
-      // Clear form fields can be handled outside this hook if needed
       setTimeout(() => {
         navigate('/dashboard');
       }, 3000);
@@ -132,7 +137,7 @@ const useAuth = () => {
     setLoading(true);
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-      navigate('/dashboard'); // Redirect after successful sign-in
+      handleSuccess('Đăng nhập thành công với email!', '/dashboard');
       return result;
     } catch (err: any) {
       handleAuthError(err);

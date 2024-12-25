@@ -1,16 +1,21 @@
-// src/components/AuthForm.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   TextField,
   Button,
   Alert,
   IconButton,
-  Link,
   InputAdornment,
   CircularProgress,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  Box,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
@@ -20,8 +25,6 @@ interface AuthFormProps {
   setEmail: (email: string) => void;
   password: string;
   setPassword: (password: string) => void;
-  confirmPassword: string;
-  setConfirmPassword: (confirm: string) => void;
   onSubmit: () => void;
   message: { type: 'success' | 'error'; text: React.ReactNode } | null;
   onCloseMessage: () => void;
@@ -34,8 +37,6 @@ const AuthForm: React.FC<AuthFormProps> = ({
   setEmail,
   password,
   setPassword,
-  confirmPassword,
-  setConfirmPassword,
   onSubmit,
   message,
   onCloseMessage,
@@ -43,8 +44,48 @@ const AuthForm: React.FC<AuthFormProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  // Reference to the alert for focus management
+  const alertRef = useRef<HTMLDivElement>(null);
+
+  // Shift focus to the alert when a message appears
+  useEffect(() => {
+    if (message && alertRef.current) {
+      alertRef.current.focus();
+    }
+  }, [message]);
+
+  // Define password rules
+  const passwordRules = [
+    {
+      label: 'Ít nhất 8 ký tự',
+      test: (pw: string) => pw.length >= 8,
+    },
+    {
+      label: 'Ít nhất 1 ký tự viết hoa',
+      test: (pw: string) => /[A-Z]/.test(pw),
+    },
+    {
+      label: 'Ít nhất 1 ký tự viết thường',
+      test: (pw: string) => /[a-z]/.test(pw),
+    },
+    {
+      label: 'Ít nhất 1 số',
+      test: (pw: string) => /[0-9]/.test(pw),
+    },
+    {
+      label: 'Ít nhất 1 ký tự đặc biệt (!@#$%^&*)',
+      test: (pw: string) => /[!@#$%^&*(),.?":{}|<>]/.test(pw),
+    },
+  ];
+
   return (
-    <>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+      noValidate
+    >
       <TextField
         variant='outlined'
         margin='normal'
@@ -53,23 +94,12 @@ const AuthForm: React.FC<AuthFormProps> = ({
         id='email'
         label='Email'
         name='email'
+        type='email'
         autoComplete='email'
         autoFocus
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        sx={{
-          input: {
-            color: 'white',
-            '&:-webkit-autofill': {
-              WebkitBoxShadow: `0 0 0 100px #1e1e1e inset`,
-              WebkitTextFillColor: 'white',
-            },
-          },
-          label: {
-            color: 'rgba(255, 255, 255, 0.7)',
-            '&.Mui-focused': { color: 'white' },
-          },
-        }}
+        aria-label='Địa chỉ email'
       />
       <TextField
         variant='outlined'
@@ -77,32 +107,27 @@ const AuthForm: React.FC<AuthFormProps> = ({
         required
         fullWidth
         name='password'
-        label='Password'
+        label='Mật khẩu'
         type={showPassword ? 'text' : 'password'}
         id='password'
         autoComplete='current-password'
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        sx={{
-          input: {
-            color: 'white',
-            '&:-webkit-autofill': {
-              WebkitBoxShadow: `0 0 0 100px #1e1e1e inset`,
-              WebkitTextFillColor: 'white',
-            },
-          },
-          label: {
-            color: 'rgba(255, 255, 255, 0.7)',
-            '&.Mui-focused': { color: 'white' },
-          },
-        }}
+        aria-label='Mật khẩu'
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
               <IconButton
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 onClick={() => setShowPassword(!showPassword)}
                 edge='end'
+                sx={{
+                  '&:focus-visible': {
+                    outline: '2px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '2px',
+                  },
+                }}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -111,88 +136,99 @@ const AuthForm: React.FC<AuthFormProps> = ({
         }}
       />
       {tab === 1 && (
-        <TextField
-          variant='outlined'
-          margin='normal'
-          required
-          fullWidth
-          name='confirmPassword'
-          label='Confirm Password'
-          type='password'
-          id='confirmPassword'
-          autoComplete='new-password'
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          sx={{
-            input: {
-              color: 'white',
-              '&:-webkit-autofill': {
-                WebkitBoxShadow: `0 0 0 100px #1e1e1e inset`,
-                WebkitTextFillColor: 'white',
-              },
-            },
-            label: {
-              color: 'rgba(255, 255, 255, 0.7)',
-              '&.Mui-focused': { color: 'white' },
-            },
-          }}
-        />
+        <Box sx={{ mt: 1, mb: 1 }}>
+          <Typography
+            variant='caption'
+            sx={{ mb: 0.5, display: 'block', textAlign: 'left' }}
+          >
+            Mật khẩu phải bao gồm:
+          </Typography>
+          <List dense sx={{ pl: 0 }}>
+            {passwordRules.map((rule, index) => {
+              const isValid = rule.test(password);
+              return (
+                <ListItem key={index} disableGutters sx={{ py: 0.25 }}>
+                  <ListItemIcon sx={{ minWidth: '30px' }}>
+                    {isValid ? (
+                      <CheckCircleIcon
+                        color='success'
+                        fontSize='small'
+                        aria-hidden='true'
+                        sx={{ fontSize: 12 }}
+                      />
+                    ) : (
+                      <CancelIcon
+                        color='error'
+                        fontSize='small'
+                        aria-hidden='true'
+                        sx={{ fontSize: 12 }}
+                      />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant='caption'
+                        color={isValid ? 'success.main' : 'error.main'}
+                      >
+                        {rule.label}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
       )}
       <Button
+        type='submit'
         variant='contained'
         fullWidth
-        disabled={loading}
-        onClick={onSubmit}
-        sx={{
-          mt: 2,
-          mb: 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-          color: 'white',
-          textTransform: 'none',
-          padding: '10px 0',
-          '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.3)' },
-        }}
+        disabled={
+          loading ||
+          (tab === 1 && passwordRules.some((rule) => !rule.test(password)))
+        }
+        aria-label={tab === 0 ? 'Log In' : 'Sign Up'}
       >
         {loading ? (
-          <CircularProgress size={24} />
+          <CircularProgress size={24} color='inherit' />
         ) : tab === 0 ? (
-          'Log In'
+          'Đăng Nhập'
         ) : (
-          'Sign Up'
+          'Đăng Ký'
         )}
       </Button>
       {message && (
         <Alert
           severity={message.type}
-          sx={{ mt: 2, mb: 2, width: '100%' }}
+          sx={{ mt: 2, mb: 2 }}
           action={
             <IconButton
               aria-label='close'
               color='inherit'
               size='small'
               onClick={onCloseMessage}
+              sx={{
+                '&:focus-visible': {
+                  outline: '2px solid',
+                  outlineColor:
+                    message.type === 'error' ? 'error.main' : 'success.main',
+                  outlineOffset: '2px',
+                },
+              }}
             >
               <CloseIcon fontSize='inherit' />
             </IconButton>
           }
+          role='alert'
+          tabIndex={-1}
+          ref={message.type === 'error' ? alertRef : null}
         >
           {message.text}
         </Alert>
       )}
-      <Link
-        component='button'
-        variant='body2'
-        onClick={() => {}}
-        sx={{
-          color: 'inherit',
-          textDecoration: 'underline',
-          fontSize: '0.725rem',
-          mt: 1,
-        }}
-      >
-        Forgot Password?
-      </Link>
-    </>
+    </form>
   );
 };
 
