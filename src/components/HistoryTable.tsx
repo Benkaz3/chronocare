@@ -1,6 +1,6 @@
 // src/components/HistoryTable.tsx
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -18,6 +18,11 @@ import {
 } from '@mui/material';
 import useUserData from '../hooks/useUserData';
 
+// **1. Separate OrderByKeys Based on Type**
+type BloodPressureOrderByKeys = 'date' | 'systolic' | 'diastolic' | 'pulse';
+type BloodSugarOrderByKeys = 'date' | 'level';
+type OrderByKeys = BloodPressureOrderByKeys | BloodSugarOrderByKeys;
+
 type Order = 'asc' | 'desc';
 
 interface HistoryTableProps {
@@ -27,7 +32,7 @@ interface HistoryTableProps {
 
 interface EnhancedTableProps {
   headCells: {
-    id: string;
+    id: OrderByKeys;
     label: string;
     numeric: boolean;
   }[];
@@ -54,7 +59,35 @@ interface BloodSugarReading {
   date: string;
 }
 
-type OrderByKeys = 'date' | 'systolic' | 'diastolic' | 'pulse' | 'level';
+interface ProcessedBP extends BloodPressureReading {
+  systolic: number;
+  diastolic: number;
+  pulse: number | null; // **Changed from number | 'N/A' to number | null**
+}
+
+interface ProcessedBS extends BloodSugarReading {
+  level: number;
+}
+
+// **2. Enhanced Type Guard**
+const isProcessedBP = (row: ProcessedBP | ProcessedBS): row is ProcessedBP => {
+  return 'systolic' in row;
+};
+
+// **3. Separated Rendering Functions**
+const renderBloodPressureRow = (row: ProcessedBP) => (
+  <>
+    <TableCell align='right'>{row.systolic}</TableCell>
+    <TableCell align='right'>{row.diastolic}</TableCell>
+    <TableCell align='right'>
+      {row.pulse !== null ? row.pulse : 'N/A'}
+    </TableCell>
+  </>
+);
+
+const renderBloodSugarRow = (row: ProcessedBS) => (
+  <TableCell align='right'>{row.level}</TableCell>
+);
 
 const EnhancedTableHead: React.FC<EnhancedTableProps> = ({
   headCells,
@@ -78,13 +111,13 @@ const EnhancedTableHead: React.FC<EnhancedTableProps> = ({
             <TableSortLabel
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id as OrderByKeys)}
+              onClick={createSortHandler(headCell.id)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
                 <Box component='span' sx={{ display: 'none' }}>
                   {order === 'desc'
-                    ? 'được sắp xếp giảm dần'
+                    ? 'được sắp xếp giảm dần' // **Consider using localization library**
                     : 'được sắp xếp tăng dần'}
                 </Box>
               ) : null}
@@ -96,20 +129,6 @@ const EnhancedTableHead: React.FC<EnhancedTableProps> = ({
   );
 };
 
-interface ProcessedBP extends BloodPressureReading {
-  systolic: number;
-  diastolic: number;
-  pulse: number | string;
-}
-
-interface ProcessedBS extends BloodSugarReading {
-  level: number;
-}
-
-const isProcessedBP = (row: ProcessedBP | ProcessedBS): row is ProcessedBP => {
-  return (row as ProcessedBP).systolic !== undefined;
-};
-
 const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
   const { readings, loading, error } = useUserData();
 
@@ -117,39 +136,50 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
   const [order, setOrder] = useState<Order>('desc');
-  const [orderBy, setOrderBy] = useState<OrderByKeys>('date');
+  const [orderBy, setOrderBy] = useState<OrderByKeys>(
+    type === 'bloodPressure' ? 'date' : 'date'
+  );
 
-  const handleRequestSort = (property: OrderByKeys) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  // **6. Memoized Callbacks**
+  const handleRequestSort = useCallback(
+    (property: OrderByKeys) => {
+      const isAsc = orderBy === property && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(property);
+    },
+    [order, orderBy]
+  );
 
-  // Handle Pagination
-  const handleChangePage = (_event: unknown, newPage: number) => {
+  const handleChangePage = useCallback((_event: unknown, newPage: number) => {
     setPage(newPage);
-  };
+  }, []);
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+  const handleChangeRowsPerPage = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      setPage(0);
+    },
+    []
+  );
 
+  // **5. Data Validation and Processing**
   const data = useMemo(() => {
     if (type === 'bloodPressure') {
-      return readings.bloodPressure.map((reading: BloodPressureReading) => ({
-        ...reading,
-        systolic: reading.value.systolic,
-        diastolic: reading.value.diastolic,
-        pulse: reading.value.pulse !== undefined ? reading.value.pulse : 'N/A',
-      })) as ProcessedBP[];
+      return (
+        (readings.bloodPressure?.map((reading: BloodPressureReading) => ({
+          ...reading,
+          systolic: reading.value.systolic,
+          diastolic: reading.value.diastolic,
+          pulse: reading.value.pulse ?? null, // **Handled as number | null**
+        })) as ProcessedBP[]) || []
+      );
     } else if (type === 'bloodSugar') {
-      return readings.bloodSugar.map((reading: BloodSugarReading) => ({
-        ...reading,
-        level: reading.value.level,
-      })) as ProcessedBS[];
+      return (
+        (readings.bloodSugar?.map((reading: BloodSugarReading) => ({
+          ...reading,
+          level: reading.value.level,
+        })) as ProcessedBS[]) || []
+      );
     }
     return [];
   }, [readings, type]);
@@ -179,6 +209,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
       : (a, b) => -descendingComparator(a, b, orderBy);
   };
 
+  // **2. Updated Comparator to Handle `null` Pulse Values**
   const descendingComparator = (
     a: ProcessedBP | ProcessedBS,
     b: ProcessedBP | ProcessedBS,
@@ -189,45 +220,47 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     }
     if (orderBy === 'systolic') {
       if (isProcessedBP(a) && isProcessedBP(b)) {
-        return (b.systolic as number) - (a.systolic as number);
+        return b.systolic - a.systolic;
       }
     }
     if (orderBy === 'diastolic') {
       if (isProcessedBP(a) && isProcessedBP(b)) {
-        return (b.diastolic as number) - (a.diastolic as number);
+        return b.diastolic - a.diastolic;
       }
     }
     if (orderBy === 'pulse') {
       if (isProcessedBP(a) && isProcessedBP(b)) {
-        const aPulse = typeof a.pulse === 'number' ? a.pulse : 0;
-        const bPulse = typeof b.pulse === 'number' ? b.pulse : 0;
+        const aPulse = a.pulse !== null ? a.pulse : Number.NEGATIVE_INFINITY;
+        const bPulse = b.pulse !== null ? b.pulse : Number.NEGATIVE_INFINITY;
         return bPulse - aPulse;
       }
     }
     if (orderBy === 'level') {
       if ('level' in a && 'level' in b) {
-        return (b.level as number) - (a.level as number);
+        return b.level - a.level;
       }
     }
     return 0;
   };
 
-  const headCells = useMemo(() => {
-    if (type === 'bloodPressure') {
-      return [
-        { id: 'date', label: 'Ngày & Giờ', numeric: false },
-        { id: 'systolic', label: 'Tâm thu (mm Hg)', numeric: true },
-        { id: 'diastolic', label: 'Tâm trương (mm Hg)', numeric: true },
-        { id: 'pulse', label: 'Nhịp tim (BPM)', numeric: true },
-      ];
-    } else if (type === 'bloodSugar') {
-      return [
-        { id: 'date', label: 'Ngày & Giờ', numeric: false },
-        { id: 'level', label: 'Mức đường huyết (mg/dL)', numeric: true },
-      ];
-    }
-    return [];
-  }, [type]);
+  // **3. Explicitly Type headCells to Match OrderByKeys**
+  const headCells: { id: OrderByKeys; label: string; numeric: boolean }[] =
+    useMemo(() => {
+      if (type === 'bloodPressure') {
+        return [
+          { id: 'date', label: 'Ngày & Giờ', numeric: false },
+          { id: 'systolic', label: 'Tâm thu (mm Hg)', numeric: true },
+          { id: 'diastolic', label: 'Tâm trương (mm Hg)', numeric: true },
+          { id: 'pulse', label: 'Nhịp tim (BPM)', numeric: true },
+        ];
+      } else if (type === 'bloodSugar') {
+        return [
+          { id: 'date', label: 'Ngày & Giờ', numeric: false },
+          { id: 'level', label: 'Mức đường huyết (mg/dL)', numeric: true },
+        ];
+      }
+      return [];
+    }, [type]);
 
   const sortedData = useMemo(() => {
     return stableSort(data, getComparator(order, orderBy));
@@ -283,19 +316,11 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
                     <TableCell component='th' scope='row'>
                       {formatDate(row.date)}
                     </TableCell>
-                    {type === 'bloodPressure' ? (
-                      isProcessedBP(row) ? (
-                        <>
-                          <TableCell align='right'>{row.systolic}</TableCell>
-                          <TableCell align='right'>{row.diastolic}</TableCell>
-                          <TableCell align='right'>{row.pulse}</TableCell>
-                        </>
-                      ) : null
-                    ) : (
-                      'level' in row && (
-                        <TableCell align='right'>{row.level}</TableCell>
-                      )
-                    )}
+                    {type === 'bloodPressure' && isProcessedBP(row)
+                      ? renderBloodPressureRow(row)
+                      : type === 'bloodSugar' && 'level' in row
+                      ? renderBloodSugarRow(row)
+                      : null}
                   </TableRow>
                 ))}
               </TableBody>

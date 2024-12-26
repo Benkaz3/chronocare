@@ -22,16 +22,12 @@ const HistoryPage: React.FC = () => {
         onChange={handleTabChange}
         aria-label='History Tabs'
       >
-        <Tab label='Blood Pressure' />
-        <Tab label='Blood Sugar' />
+        <Tab label='Huyết Áp' />
+        <Tab label='Đường Huyết' />
       </Tabs>
       <Box sx={{ mt: 2 }}>
-        {tabIndex === 0 && (
-          <HistoryTable type='bloodPressure' title='Lịch sử huyết áp' />
-        )}
-        {tabIndex === 1 && (
-          <HistoryTable type='bloodSugar' title='Lịch sử đường huyết' />
-        )}
+        {tabIndex === 0 && <HistoryTable type='bloodPressure' title='' />}
+        {tabIndex === 1 && <HistoryTable type='bloodSugar' title='' />}
       </Box>
     </Paper>
   );
