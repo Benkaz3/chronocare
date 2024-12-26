@@ -65,17 +65,14 @@ const Dashboard: React.FC = () => {
           {/* Blood Pressure History */}
           <Grid item xs={12}>
             <Paper elevation={3} sx={{ padding: 2 }}>
-              <HistoryTable
-                type='bloodPressure'
-                title='Blood Pressure History'
-              />
+              <HistoryTable type='bloodPressure' title='Lịch sử huyết áp' />
             </Paper>
           </Grid>
 
           {/* Blood Sugar History */}
           <Grid item xs={12}>
             <Paper elevation={3} sx={{ padding: 2 }}>
-              <HistoryTable type='bloodSugar' title='Blood Sugar History' />
+              <HistoryTable type='bloodSugar' title='Lịch sử đường huyết' />
             </Paper>
           </Grid>
 
