@@ -1,39 +1,67 @@
-// src/pages/Dashboard.tsx
+// src/pages/Dashboard/Dashboard.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
   Typography,
   IconButton,
   Container,
-  Grid,
+  Box,
   Paper,
 } from '@mui/material';
-import { Logout as LogoutIcon } from '@mui/icons-material';
+import {
+  Logout as LogoutIcon,
+  History as HistoryIcon,
+  BarChart as BarChartIcon,
+  Settings as SettingsIcon,
+} from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { BottomNavigation, BottomNavigationAction } from '@mui/material';
 import useAuth from '../hooks/useAuth';
-import useUserData from '../hooks/useUserData'; // Import the hook
-import StatusSummary from '../components/StatusSummary';
-import RecordForm from '../components/RecordForm';
-import HistoryTable from '../components/HistoryTable';
-import BloodPressureChart from '../components/BloodPressureChart';
-import BloodSugarChart from '../components/BloodSugarChart';
+import useUserData from '../hooks/useUserData';
 
 const Dashboard: React.FC = () => {
   const { signOut } = useAuth();
-  useUserData(); // Removed 'readings' as it's not used
+  useUserData();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const navOptions = [
+    { label: 'Thêm', icon: <AddIcon />, path: 'record' },
+    { label: 'Lịch sử', icon: <HistoryIcon />, path: 'history' },
+    { label: 'Biểu đồ', icon: <BarChartIcon />, path: 'stats' },
+    { label: 'Cài đặt', icon: <SettingsIcon />, path: 'settings' },
+  ];
+
+  const currentNav = navOptions.findIndex((option) =>
+    location.pathname.startsWith(`/dashboard/${option.path}`)
+  );
+
+  const [value, setValue] = useState(currentNav !== -1 ? currentNav : 0);
+
+  useEffect(() => {
+    setValue(currentNav !== -1 ? currentNav : 0);
+  }, [currentNav]);
 
   const handleLogout = async () => {
     await signOut();
   };
 
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+    navigate(`/dashboard/${navOptions[newValue].path}`);
+  };
+
   return (
-    <div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Header */}
       <AppBar position='static'>
         <Toolbar>
-          <Typography variant='h6' sx={{ flexGrow: 1 }}>
-            ChronoCare Dashboard
+          <Typography variant='h1' sx={{ flexGrow: 1, fontFamily: 'Playfair' }}>
+            ChronoCare
           </Typography>
           <IconButton
             color='inherit'
@@ -46,52 +74,31 @@ const Dashboard: React.FC = () => {
       </AppBar>
 
       {/* Main Content */}
-      <Container maxWidth='lg' sx={{ mt: 4, mb: 4 }}>
-        <Grid container spacing={3}>
-          {/* Current Status Summary */}
-          <Grid item xs={12} md={4}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <StatusSummary />
-            </Paper>
-          </Grid>
+      <Box sx={{ flex: 1, padding: 2 }}>
+        <Container
+          maxWidth='lg'
+          sx={{ mb: 7 /* Space for Bottom Navigation */ }}
+        >
+          <Outlet />
+        </Container>
+      </Box>
 
-          {/* Record New Readings */}
-          <Grid item xs={12} md={8}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <RecordForm />
-            </Paper>
-          </Grid>
-
-          {/* Blood Pressure History */}
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <HistoryTable type='bloodPressure' title='Lịch sử huyết áp' />
-            </Paper>
-          </Grid>
-
-          {/* Blood Sugar History */}
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <HistoryTable type='bloodSugar' title='Lịch sử đường huyết' />
-            </Paper>
-          </Grid>
-
-          {/* Blood Pressure Chart */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <BloodPressureChart />
-            </Paper>
-          </Grid>
-
-          {/* Blood Sugar Chart */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <BloodSugarChart />
-            </Paper>
-          </Grid>
-        </Grid>
-      </Container>
-    </div>
+      {/* Bottom Navigation */}
+      <Paper
+        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
+        elevation={3}
+      >
+        <BottomNavigation value={value} onChange={handleChange}>
+          {navOptions.map((option) => (
+            <BottomNavigationAction
+              key={option.path}
+              label={option.label}
+              icon={option.icon}
+            />
+          ))}
+        </BottomNavigation>
+      </Paper>
+    </Box>
   );
 };
 

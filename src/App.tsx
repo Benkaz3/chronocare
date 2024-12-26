@@ -4,43 +4,48 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
+import RecordPage from './pages/Dashboard/RecordPage';
+import HistoryPage from './pages/Dashboard/HistoryPage';
+import StatsPage from './pages/Dashboard/StatsPage';
+import SettingsPage from './pages/Dashboard/SettingsPage';
 import useAuth from './hooks/useAuth';
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    // You can replace this with a spinner or a more elaborate loading screen
     return <div>Loading...</div>;
   }
 
   return (
     <Routes>
-      {/* Default Route */}
       <Route
         path='/'
         element={
           user ? (
-            <Navigate to='/dashboard' replace />
+            <Navigate to='/dashboard/record' replace />
           ) : (
             <Navigate to='/auth' replace />
           )
         }
       />
-
-      {/* Authentication Route */}
       <Route
         path='/auth'
-        element={!user ? <AuthPage /> : <Navigate to='/dashboard' replace />}
+        element={
+          !user ? <AuthPage /> : <Navigate to='/dashboard/record' replace />
+        }
       />
-
-      {/* Protected Dashboard Route */}
       <Route
         path='/dashboard'
         element={user ? <Dashboard /> : <Navigate to='/auth' replace />}
-      />
-
-      {/* Catch-All Route for Undefined Paths */}
+      >
+        <Route path='record' element={<RecordPage />} />
+        <Route path='history' element={<HistoryPage />} />
+        <Route path='stats' element={<StatsPage />} />
+        <Route path='settings' element={<SettingsPage />} />
+        <Route index element={<Navigate to='record' replace />} />
+        <Route path='*' element={<Navigate to='record' replace />} />
+      </Route>
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
   );

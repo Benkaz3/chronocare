@@ -56,7 +56,7 @@ const BloodPressureChart: React.FC = () => {
   return (
     <Box>
       <Typography variant='h6' gutterBottom>
-        Lịch Sử Huyết Áp
+        Huyết Áp
       </Typography>
       <Box mb={2}>
         <ToggleButtonGroup

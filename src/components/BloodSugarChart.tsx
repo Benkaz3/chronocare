@@ -55,7 +55,7 @@ const BloodSugarChart: React.FC = () => {
   return (
     <Box>
       <Typography variant='h6' gutterBottom>
-        Lịch Sử Đường Huyết
+        Đường Huyết
       </Typography>
       <Box mb={2}>
         <ToggleButtonGroup
