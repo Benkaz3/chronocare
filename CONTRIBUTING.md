@@ -1,6 +1,6 @@
-# Contributing to Health247
+# Contributing to ChronoCare
 
-First off, thank you for considering contributing to Health247! 🎉 Your efforts are greatly appreciated and help make this project better for everyone.
+First off, thank you for considering contributing to ChronoCare! 🎉 Your efforts are greatly appreciated and help make this project better for everyone.
 
 ## Table of Contents
 
@@ -36,9 +36,9 @@ We are committed to fostering a welcoming and inclusive community. Please read a
 
 ### Reporting Bugs
 
-If you find a bug in Health247, please follow these steps:
+If you find a bug in ChronoCare, please follow these steps:
 
-1. **Open an Issue:** [Click here to create a new issue](https://github.com/yourusername/health247/issues).
+1. **Open an Issue:** [Click here to create a new issue](https://github.com/yourusername/ChronoCare/issues).
 2. **Provide Details:**
    - **Description:** Clearly describe the bug.
    - **Steps to Reproduce:** List the steps that cause the issue.
@@ -48,9 +48,9 @@ If you find a bug in Health247, please follow these steps:
 
 ### Suggesting Enhancements
 
-Have an idea to improve Health247? We'd love to hear it!
+Have an idea to improve ChronoCare? We'd love to hear it!
 
-1. **Open an Issue:** [Click here to create a new issue](https://github.com/yourusername/health247/issues).
+1. **Open an Issue:** [Click here to create a new issue](https://github.com/yourusername/ChronoCare/issues).
 2. **Use the `enhancement` Tag:** Label your issue appropriately.
 3. **Provide a Detailed Description:** Explain the feature and its benefits.
 
@@ -65,7 +65,7 @@ Pull requests are welcome! Follow these steps to submit your contributions:
 2. **Clone Your Fork**
 
    ```bash
-   git clone https://github.com/yourusername/health247.git
+   git clone https://github.com/yourusername/ChronoCare.git
    ```
 
 3. **Create a New Branch**
@@ -109,13 +109,13 @@ To set up the project locally, follow these steps:
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/health247.git
+   git clone https://github.com/yourusername/ChronoCare.git
    ```
 
 2. **Navigate to the Project Directory**
 
    ```bash
-   cd health247
+   cd ChronoCare
    ```
 
 3. **Install Dependencies**
@@ -195,4 +195,4 @@ Write clear and concise tests for new features and bug fixes.
 - Recharts
 - Conventional Commits
 
-Thank you for your interest in contributing to Health247! Together, we can make health monitoring accessible and efficient for everyone.
+Thank you for your interest in contributing to ChronoCare! Together, we can make health monitoring accessible and efficient for everyone.
