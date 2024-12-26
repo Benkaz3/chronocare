@@ -1,5 +1,3 @@
-// src/components/StatusBar.tsx
-
 import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 
@@ -21,17 +19,17 @@ const StatusBar: React.FC<StatusBarProps> = ({ status }) => {
   const getStatusColor = () => {
     switch (status) {
       case 'Bình thường':
-        return '#4caf50'; // Màu xanh lá
+        return '#4caf50';
       case 'Tăng cao':
       case 'Tiền tiểu đường':
-        return '#ff9800'; // Màu cam
+        return '#ff9800';
       case 'Tăng cao (Giai đoạn 1)':
       case 'Tiểu đường':
-        return '#ff5722'; // Màu cam đậm
+        return '#ff5722';
       case 'Tăng cao (Giai đoạn 2)':
-        return '#f44336'; // Màu đỏ
+        return '#f44336';
       default:
-        return '#9e9e9e'; // Màu xám
+        return '#9e9e9e';
     }
   };
 

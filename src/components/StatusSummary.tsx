@@ -1,5 +1,3 @@
-// src/components/StatusSummary.tsx
-
 import React, { useMemo } from 'react';
 import {
   Typography,
@@ -85,10 +83,9 @@ const StatusSummary: React.FC = () => {
     }
   };
 
-  // Định dạng Ngày
   const formatDate = (isoString: string): string => {
     const date = new Date(isoString);
-    return date.toLocaleString('vi-VN'); // Định dạng theo ngôn ngữ Việt Nam
+    return date.toLocaleString('vi-VN');
   };
 
   return (

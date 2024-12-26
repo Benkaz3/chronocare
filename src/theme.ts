@@ -1,10 +1,8 @@
-// src/theme.ts
-
 import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
-    mode: 'light', // Set the theme to light mode
+    mode: 'light',
     primary: {
       main: '#1976d2', // Default primary color for light theme
     },

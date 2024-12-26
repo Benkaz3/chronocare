@@ -1,5 +1,3 @@
-// src/pages/Dashboard/StatsPage.tsx
-
 import React from 'react';
 import { Grid, Paper, Typography } from '@mui/material';
 import BloodPressureChart from '../../components/BloodPressureChart';

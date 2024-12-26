@@ -1,5 +1,3 @@
-// src/pages/Dashboard/Dashboard.tsx
-
 import React, { useState, useEffect } from 'react';
 import {
   AppBar,

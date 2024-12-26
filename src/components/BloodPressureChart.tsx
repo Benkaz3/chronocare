@@ -1,5 +1,3 @@
-// src/components/BloodPressureChart.tsx
-
 import React, { useMemo, useState } from 'react';
 import {
   LineChart,
@@ -33,10 +31,12 @@ const BloodPressureChart: React.FC = () => {
     }
   };
 
-  // Chuẩn bị dữ liệu cho biểu đồ: lọc theo khoảng thời gian và chuyển đổi các đọc số huyết áp thành mảng đối tượng với ngày, tâm thu và tâm trương
+  // Chuẩn bị dữ liệu cho biểu đồ: lọc theo khoảng thời gian và chuyển đổi các
+  // chỉ số huyết áp thành mảng đối tượng với ngày, tâm thu và tâm trương
   const data = useMemo(() => {
     const now = dayjs();
-    let filteredReadings = readings.bloodPressure.slice().reverse(); // Đảm bảo thứ tự theo thời gian
+    // Đảm bảo thứ tự theo thời gian
+    let filteredReadings = readings.bloodPressure.slice().reverse();
 
     if (timeRange !== 'all') {
       const days = parseInt(timeRange, 10);

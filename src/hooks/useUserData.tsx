@@ -47,7 +47,7 @@ const useUserData = (): UseUserData => {
         value: {
           systolic: item.systolic,
           diastolic: item.diastolic,
-          pulse: item.pulse || 'N/A', // Assuming pulse might be optional
+          pulse: item.pulse || 'N/A', // pulse is optional
         },
         date: item.time,
       }));

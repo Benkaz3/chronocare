@@ -1,5 +1,3 @@
-// src/components/HistoryTable.tsx
-
 import React, { useMemo, useState, useCallback } from 'react';
 import {
   Table,
@@ -117,7 +115,7 @@ const EnhancedTableHead: React.FC<EnhancedTableProps> = ({
               {orderBy === headCell.id ? (
                 <Box component='span' sx={{ display: 'none' }}>
                   {order === 'desc'
-                    ? 'được sắp xếp giảm dần' // **Consider using localization library**
+                    ? 'được sắp xếp giảm dần'
                     : 'được sắp xếp tăng dần'}
                 </Box>
               ) : null}

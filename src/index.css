@@ -32,17 +32,17 @@ a {
   background: var(--gradient);
 }
 
-/* Custom font for logo text */
+/* Custom fonts for logo text & decorative text */
 @font-face {
   font-family: 'Playfair';
   src: url('./assets/fonts/Playfair_144pt-ExtraBold.ttf') format('truetype');
-  font-weight: 900; /* Corresponds to ExtraBold */
+  font-weight: 900; 
   font-style: normal;
 }
 @font-face {
   font-family: 'Nickainley';
   src: url('./assets/fonts/Nickainley-Normal.otf') format('truetype');
-  font-weight: 900; /* Corresponds to ExtraBold */
+  font-weight: 900; 
   font-style: normal;
 }
 

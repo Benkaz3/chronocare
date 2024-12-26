@@ -1,5 +1,3 @@
-// src/pages/Dashboard/RecordPage.tsx
-
 import React from 'react';
 import { Paper, Typography } from '@mui/material';
 import RecordForm from '../../components/RecordForm';

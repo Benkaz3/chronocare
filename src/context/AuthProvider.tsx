@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../firebase'; // Ensure this path correctly points to your firebase setup
-import { AuthContext } from './AuthContext'; // Import the context from the new file
+import { auth } from '../firebase';
+import { AuthContext } from './AuthContext';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

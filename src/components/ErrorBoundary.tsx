@@ -1,5 +1,3 @@
-// src/components/ErrorBoundary.tsx
-
 import { Component, ReactNode, ErrorInfo } from 'react';
 import { Typography, Button, Box } from '@mui/material';
 
@@ -43,17 +41,17 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           padding={2}
         >
           <Typography variant='h4' gutterBottom>
-            Oops! Something went wrong.
+            Bị lỗi òi! Có gì đó sai sai!
           </Typography>
           <Typography variant='body1' gutterBottom>
-            An unexpected error has occurred. Please try reloading the page.
+            Bị lỗi òi! Thử tải lại coi sao...
           </Typography>
           <Button
             variant='contained'
             color='primary'
             onClick={this.handleReload}
           >
-            Reload Page
+            Tải lại trang
           </Button>
         </Box>
       );

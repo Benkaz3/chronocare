@@ -1,5 +1,3 @@
-// src/components/AuthProviderButtons.tsx
-
 import React from 'react';
 import { Button, Box } from '@mui/material';
 import GoogleLogo from '../assets/google-logo.svg';
@@ -30,7 +28,7 @@ const AuthProviderButtons: React.FC<AuthProviderButtonsProps> = ({
     >
       <img
         src={GoogleLogo}
-        alt='' // Decorative image
+        alt=''
         style={{ width: 20, marginRight: 8 }}
         aria-hidden='true'
       />
@@ -47,7 +45,7 @@ const AuthProviderButtons: React.FC<AuthProviderButtonsProps> = ({
     >
       <img
         src={TwitterLogo}
-        alt='' // Decorative image
+        alt=''
         style={{ width: 20, marginRight: 8 }}
         aria-hidden='true'
       />

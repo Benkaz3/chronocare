@@ -1,5 +1,3 @@
-// src/utils/statusUtils.ts
-
 export type BPStatus =
   | 'Bình thường'
   | 'Tăng cao'
@@ -74,7 +72,7 @@ export const evaluateBPStatus = (
         'Tìm kiếm sự chăm sóc y tế ngay lập tức để quản lý huyết áp của bạn.',
       range: {
         min: 140,
-        max: Infinity, // Changed to Infinity for better scalability
+        max: Infinity,
         color: '#f44336', // Red
       },
     };
@@ -86,7 +84,7 @@ export const evaluateBPStatus = (
         'Vui lòng đảm bảo các chỉ số đo chính xác và tham khảo ý kiến nhà cung cấp dịch vụ y tế.',
       range: {
         min: 0,
-        max: Infinity, // Changed to Infinity for better scalability
+        max: Infinity,
         color: '#9e9e9e', // Grey
       },
     };
@@ -125,7 +123,7 @@ export const evaluateBSStatus = (level: number): StatusInfo => {
         'Tham khảo ý kiến nhà cung cấp dịch vụ y tế để quản lý và điều trị thích hợp.',
       range: {
         min: 126,
-        max: Infinity, // Changed to Infinity for better scalability
+        max: Infinity,
         color: '#f44336', // Red
       },
     };
@@ -137,7 +135,7 @@ export const evaluateBSStatus = (level: number): StatusInfo => {
         'Vui lòng đảm bảo các chỉ số đo chính xác và tham khảo ý kiến nhà cung cấp dịch vụ y tế.',
       range: {
         min: 0,
-        max: Infinity, // Changed to Infinity for better scalability
+        max: Infinity,
         color: '#9e9e9e', // Grey
       },
     };

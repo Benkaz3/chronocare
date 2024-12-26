@@ -10,7 +10,7 @@ import {
   orderBy,
   limit,
   FirestoreError,
-  Timestamp, // Import Timestamp
+  Timestamp,
 } from 'firebase/firestore';
 
 // Firebase configuration

@@ -1,5 +1,3 @@
-// src/pages/Dashboard/HistoryPage.tsx
-
 import React from 'react';
 import { Tabs, Tab, Box, Typography, Paper } from '@mui/material';
 import { useState } from 'react';

@@ -1,5 +1,3 @@
-// src/hooks/useAuth.tsx
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -16,7 +14,7 @@ import {
 import { auth } from '../firebase';
 import { Typography } from '@mui/material';
 
-// Define specific Firebase Auth error codes
+// Firebase Auth error codes
 type FirebaseAuthErrorCode =
   | 'auth/email-already-in-use'
   | 'auth/invalid-email'

@@ -1,5 +1,3 @@
-// src/pages/ResetPasswordPage.tsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
@@ -40,7 +38,7 @@ const ResetPasswordPage: React.FC = () => {
   // Example error state for email validation
   const [emailError, setEmailError] = useState<string | undefined>(undefined);
 
-  // Basic email format validation
+  // email format validation
   useEffect(() => {
     if (email === '') {
       setEmailError(undefined);
@@ -114,7 +112,7 @@ const ResetPasswordPage: React.FC = () => {
               mb: 3,
             }}
           >
-            Reset Password
+            Cài lại mật khẩu
           </Typography>
           <Box
             component='form'
@@ -184,7 +182,7 @@ const ResetPasswordPage: React.FC = () => {
               }}
               aria-label='Back to Log In'
             >
-              Back to Log In
+              Quay lại đăng nhập
             </Button>
           </Box>
         </Box>

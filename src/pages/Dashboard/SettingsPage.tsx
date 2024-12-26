@@ -1,17 +1,13 @@
-// src/pages/Dashboard/SettingsPage.tsx
-
 import React from 'react';
 import { Typography, Paper } from '@mui/material';
 
 const SettingsPage: React.FC = () => (
   <Paper elevation={3} sx={{ padding: 2 }}>
     <Typography variant='h5' gutterBottom>
-      Settings
+      Cài đặt
     </Typography>
     {/* Future settings go here */}
-    <Typography variant='body1'>
-      Settings page is under construction.
-    </Typography>
+    <Typography variant='body1'>Trang cài đặt đang được xây dựng.</Typography>
   </Paper>
 );
 

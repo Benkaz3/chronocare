@@ -1,5 +1,3 @@
-// src/pages/AuthPage.tsx
-
 import React, { useState, useRef } from 'react';
 import {
   CssBaseline,
@@ -15,7 +13,7 @@ import {
 import { ThemeProvider } from '@mui/material/styles';
 import AuthProviderButtons from '../components/AuthProviderButtons';
 import AuthForm from '../components/AuthForm';
-import useAuth from '../hooks/useAuth'; // Import the custom hook
+import useAuth from '../hooks/useAuth';
 import theme from '../theme';
 
 const AuthPage: React.FC = () => {
@@ -24,7 +22,7 @@ const AuthPage: React.FC = () => {
   const [tab, setTab] = useState(0);
   const [fade, setFade] = useState(true);
 
-  // Utilize the custom hook
+  // Use custom hook
   const {
     message,
     loading,
@@ -48,7 +46,7 @@ const AuthPage: React.FC = () => {
       setPassword('');
       // Shift focus to the tab panel
       tabPanelRef.current?.focus();
-    }, 300); // Duration should match the Fade timeout
+    }, 300);
   };
 
   const handleSubmit = () => {
