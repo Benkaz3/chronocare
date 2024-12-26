@@ -4,41 +4,33 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Paper,
   Typography,
   CircularProgress,
   Alert,
-  TableSortLabel,
   TablePagination,
   Box,
+  Avatar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Dialog,
+  DialogTitle,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import useUserData from '../hooks/useUserData';
 
-// **1. Separate OrderByKeys Based on Type**
-type BloodPressureOrderByKeys = 'date' | 'systolic' | 'diastolic' | 'pulse';
-type BloodSugarOrderByKeys = 'date' | 'level';
-type OrderByKeys = BloodPressureOrderByKeys | BloodSugarOrderByKeys;
-
-type Order = 'asc' | 'desc';
-
+// **1. Props Interface for HistoryTable**
 interface HistoryTableProps {
   type: 'bloodPressure' | 'bloodSugar';
   title: string;
 }
 
-interface EnhancedTableProps {
-  headCells: {
-    id: OrderByKeys;
-    label: string;
-    numeric: boolean;
-  }[];
-  order: Order;
-  orderBy: OrderByKeys;
-  onRequestSort: (property: OrderByKeys) => void;
-}
-
+// **2. Reading Interfaces**
 interface BloodPressureReading {
   id: string;
   value: {
@@ -57,97 +49,239 @@ interface BloodSugarReading {
   date: string;
 }
 
+// **3. Processed Reading Interfaces**
 interface ProcessedBP extends BloodPressureReading {
   systolic: number;
   diastolic: number;
-  pulse: number | null; // **Changed from number | 'N/A' to number | null**
+  pulse: number | null;
+  status: string;
 }
 
 interface ProcessedBS extends BloodSugarReading {
   level: number;
+  status: string;
 }
 
-// **2. Enhanced Type Guard**
+// **4. Type Guards**
 const isProcessedBP = (row: ProcessedBP | ProcessedBS): row is ProcessedBP => {
   return 'systolic' in row;
 };
 
-// **3. Separated Rendering Functions**
-const renderBloodPressureRow = (row: ProcessedBP) => (
-  <>
-    <TableCell align='right'>{row.systolic}</TableCell>
-    <TableCell align='right'>{row.diastolic}</TableCell>
-    <TableCell align='right'>
-      {row.pulse !== null ? row.pulse : 'N/A'}
-    </TableCell>
-  </>
-);
+// **5. Status Determination Functions**
+const getBPStatus = (
+  systolic: number,
+  diastolic: number
+): { status: string; color: string } => {
+  if (systolic < 120 && diastolic < 80) {
+    return { status: 'Bình thường', color: '#4caf50' };
+  } else if (systolic >= 120 && systolic < 130 && diastolic < 80) {
+    return { status: 'Tăng nhẹ', color: '#e8cf51' };
+  } else if (
+    (systolic >= 130 && systolic < 140) ||
+    (diastolic >= 80 && diastolic < 90)
+  ) {
+    return { status: 'Tăng huyết áp giai đoạn 1', color: '#ffa322' };
+  } else if (systolic >= 140 || diastolic >= 90) {
+    return { status: 'Tăng huyết áp giai đoạn 2', color: '#f44336' };
+  } else {
+    return { status: 'Không xác định', color: '#9e9e9e' };
+  }
+};
 
-const renderBloodSugarRow = (row: ProcessedBS) => (
-  <TableCell align='right'>{row.level}</TableCell>
-);
+const getBSStatus = (level: number): { status: string; color: string } => {
+  if (level < 70) {
+    return { status: 'Thấp', color: '#2196f3' };
+  } else if (level >= 70 && level <= 140) {
+    return { status: 'Bình thường', color: '#4caf50' };
+  } else if (level > 140 && level <= 180) {
+    return { status: 'Cao', color: '#ff9800' };
+  } else {
+    return { status: 'Nguy kịch', color: '#f44336' };
+  }
+};
 
-const EnhancedTableHead: React.FC<EnhancedTableProps> = ({
-  headCells,
-  order,
-  orderBy,
-  onRequestSort,
-}) => {
-  const createSortHandler = (property: OrderByKeys) => () => {
-    onRequestSort(property);
-  };
+// **6. Styled Components for Status Circles**
+interface StyledAvatarProps {
+  bgcolor: string;
+}
+
+const BPCircle = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== 'bgcolor',
+})<StyledAvatarProps>(({ bgcolor }) => ({
+  backgroundColor: bgcolor,
+  width: 60,
+  height: 60,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: '0.8rem',
+}));
+
+const BSCircle = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== 'bgcolor',
+})<StyledAvatarProps>(({ bgcolor }) => ({
+  backgroundColor: bgcolor,
+  width: 60,
+  height: 60,
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: '0.8rem',
+}));
+
+// **7. Row Rendering Functions**
+const renderBloodPressureRow = (
+  row: ProcessedBP,
+  formatDateTime: (isoString: string) => { date: string; time: string }
+) => {
+  const { status, color } = getBPStatus(row.systolic, row.diastolic);
+  const { date, time } = formatDateTime(row.date);
 
   return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component='span' sx={{ display: 'none' }}>
-                  {order === 'desc'
-                    ? 'được sắp xếp giảm dần'
-                    : 'được sắp xếp tăng dần'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
+    <>
+      <TableCell align='center'>
+        <BPCircle bgcolor={color}>
+          <Typography variant='subtitle2'>{row.systolic}</Typography>
+          <Box
+            sx={{
+              width: '80%',
+              height: '1px',
+              backgroundColor: '#fff',
+              marginY: '2px',
+            }}
+          />
+          <Typography variant='subtitle2'>{row.diastolic}</Typography>
+        </BPCircle>
+      </TableCell>
+      <TableCell>
+        <Typography variant='subtitle1' color='textPrimary'>
+          {status}
+        </Typography>
+        <Typography variant='body2' color='textSecondary'>
+          {date} {time}
+          {row.pulse !== null && ` | ${row.pulse} bpm`}
+        </Typography>
+      </TableCell>
+    </>
   );
 };
 
+const renderBloodSugarRow = (
+  row: ProcessedBS,
+  formatDateTime: (isoString: string) => { date: string; time: string }
+) => {
+  const { status, color } = getBSStatus(row.level);
+  const { date, time } = formatDateTime(row.date);
+
+  return (
+    <>
+      <TableCell align='center'>
+        <BSCircle bgcolor={color}>
+          <Typography variant='subtitle2'>{row.level}</Typography>
+        </BSCircle>
+      </TableCell>
+      <TableCell>
+        <Typography variant='subtitle1' color='textPrimary'>
+          {status}
+        </Typography>
+        <Typography variant='body2' color='textSecondary'>
+          {date} {time}
+        </Typography>
+      </TableCell>
+    </>
+  );
+};
+
+// **8. HistoryTable Component**
 const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
   const { readings, loading, error } = useUserData();
 
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [statusFilter, setStatusFilter] = useState<string>('Tất cả');
 
-  const [order, setOrder] = useState<Order>('desc');
-  const [orderBy, setOrderBy] = useState<OrderByKeys>(
-    type === 'bloodPressure' ? 'date' : 'date'
-  );
+  // **State for Calendar Modal**
+  const [openCalendar, setOpenCalendar] = useState<boolean>(false);
 
-  // **6. Memoized Callbacks**
-  const handleRequestSort = useCallback(
-    (property: OrderByKeys) => {
-      const isAsc = orderBy === property && order === 'asc';
-      setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(property);
-    },
-    [order, orderBy]
-  );
+  // **Handle Modal Open/Close**
+  const handleOpenCalendar = () => {
+    setOpenCalendar(true);
+  };
 
+  const handleCloseCalendar = () => {
+    setOpenCalendar(false);
+  };
+
+  // **Determine status options based on type**
+  const statusOptions = useMemo(() => {
+    if (type === 'bloodPressure') {
+      return [
+        'Tất cả',
+        'Bình thường',
+        'Tăng nhẹ',
+        'Tăng huyết áp giai đoạn 1',
+        'Tăng huyết áp giai đoạn 2',
+        'Không xác định',
+      ];
+    } else if (type === 'bloodSugar') {
+      return ['Tất cả', 'Thấp', 'Bình thường', 'Cao', 'Nguy kịch'];
+    }
+    return ['Tất cả'];
+  }, [type]);
+
+  // **Processing Data with Status**
+  const dataWithStatus = useMemo(() => {
+    if (type === 'bloodPressure') {
+      return (
+        (readings.bloodPressure?.map((reading: BloodPressureReading) => {
+          const baseProcessed: Omit<ProcessedBP, 'status'> = {
+            ...reading,
+            systolic: reading.value.systolic,
+            diastolic: reading.value.diastolic,
+            pulse: reading.value.pulse ?? null,
+          };
+
+          const statusInfo = getBPStatus(
+            baseProcessed.systolic,
+            baseProcessed.diastolic
+          );
+
+          return { ...baseProcessed, status: statusInfo.status } as ProcessedBP;
+        }) as ProcessedBP[]) || []
+      );
+    } else if (type === 'bloodSugar') {
+      return (
+        (readings.bloodSugar?.map((reading: BloodSugarReading) => {
+          const baseProcessed: Omit<ProcessedBS, 'status'> = {
+            ...reading,
+            level: reading.value.level,
+          };
+
+          const statusInfo = getBSStatus(baseProcessed.level);
+
+          return { ...baseProcessed, status: statusInfo.status } as ProcessedBS;
+        }) as ProcessedBS[]) || []
+      );
+    }
+    return [];
+  }, [readings, type]);
+
+  // **Filter Data Based on Status Filter**
+  const filteredData = useMemo(() => {
+    if (statusFilter === 'Tất cả') return dataWithStatus;
+    return dataWithStatus.filter((row) => row.status === statusFilter);
+  }, [dataWithStatus, statusFilter]);
+
+  // **Paginate the Filtered Data**
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [filteredData, page, rowsPerPage]);
+
+  // **Handle Pagination Events**
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
     setPage(newPage);
   }, []);
@@ -160,120 +294,20 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     []
   );
 
-  // **5. Data Validation and Processing**
-  const data = useMemo(() => {
-    if (type === 'bloodPressure') {
-      return (
-        (readings.bloodPressure?.map((reading: BloodPressureReading) => ({
-          ...reading,
-          systolic: reading.value.systolic,
-          diastolic: reading.value.diastolic,
-          pulse: reading.value.pulse ?? null, // **Handled as number | null**
-        })) as ProcessedBP[]) || []
-      );
-    } else if (type === 'bloodSugar') {
-      return (
-        (readings.bloodSugar?.map((reading: BloodSugarReading) => ({
-          ...reading,
-          level: reading.value.level,
-        })) as ProcessedBS[]) || []
-      );
-    }
-    return [];
-  }, [readings, type]);
-
-  const stableSort = <T,>(
-    array: T[],
-    comparator: (a: T, b: T) => number
-  ): T[] => {
-    const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-    stabilizedThis.sort((a, b) => {
-      const orderComp = comparator(a[0], b[0]);
-      if (orderComp !== 0) return orderComp;
-      return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
-  };
-
-  const getComparator = (
-    order: Order,
-    orderBy: OrderByKeys
-  ): ((
-    a: ProcessedBP | ProcessedBS,
-    b: ProcessedBP | ProcessedBS
-  ) => number) => {
-    return order === 'desc'
-      ? (a, b) => descendingComparator(a, b, orderBy)
-      : (a, b) => -descendingComparator(a, b, orderBy);
-  };
-
-  // **2. Updated Comparator to Handle `null` Pulse Values**
-  const descendingComparator = (
-    a: ProcessedBP | ProcessedBS,
-    b: ProcessedBP | ProcessedBS,
-    orderBy: OrderByKeys
-  ): number => {
-    if (orderBy === 'date') {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    }
-    if (orderBy === 'systolic') {
-      if (isProcessedBP(a) && isProcessedBP(b)) {
-        return b.systolic - a.systolic;
-      }
-    }
-    if (orderBy === 'diastolic') {
-      if (isProcessedBP(a) && isProcessedBP(b)) {
-        return b.diastolic - a.diastolic;
-      }
-    }
-    if (orderBy === 'pulse') {
-      if (isProcessedBP(a) && isProcessedBP(b)) {
-        const aPulse = a.pulse !== null ? a.pulse : Number.NEGATIVE_INFINITY;
-        const bPulse = b.pulse !== null ? b.pulse : Number.NEGATIVE_INFINITY;
-        return bPulse - aPulse;
-      }
-    }
-    if (orderBy === 'level') {
-      if ('level' in a && 'level' in b) {
-        return b.level - a.level;
-      }
-    }
-    return 0;
-  };
-
-  // **3. Explicitly Type headCells to Match OrderByKeys**
-  const headCells: { id: OrderByKeys; label: string; numeric: boolean }[] =
-    useMemo(() => {
-      if (type === 'bloodPressure') {
-        return [
-          { id: 'date', label: 'Ngày & Giờ', numeric: false },
-          { id: 'systolic', label: 'Tâm thu (mm Hg)', numeric: true },
-          { id: 'diastolic', label: 'Tâm trương (mm Hg)', numeric: true },
-          { id: 'pulse', label: 'Nhịp tim (BPM)', numeric: true },
-        ];
-      } else if (type === 'bloodSugar') {
-        return [
-          { id: 'date', label: 'Ngày & Giờ', numeric: false },
-          { id: 'level', label: 'Mức đường huyết (mg/dL)', numeric: true },
-        ];
-      }
-      return [];
-    }, [type]);
-
-  const sortedData = useMemo(() => {
-    return stableSort(data, getComparator(order, orderBy));
-  }, [data, order, orderBy]);
-
-  const paginatedData = useMemo(() => {
-    return sortedData.slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
-    );
-  }, [sortedData, page, rowsPerPage]);
-
-  const formatDate = (isoString: string): string => {
-    const date = new Date(isoString);
-    return date.toLocaleString('vi-VN');
+  // **Format Date and Time**
+  const formatDateTime = (
+    isoString: string
+  ): { date: string; time: string } => {
+    const dateObj = new Date(isoString);
+    const formattedDate = `${String(dateObj.getDate()).padStart(
+      2,
+      '0'
+    )}/${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+    const formattedTime = `${String(dateObj.getHours()).padStart(
+      2,
+      '0'
+    )}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+    return { date: formattedDate, time: formattedTime };
   };
 
   return (
@@ -281,6 +315,37 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
       <Typography variant='h6' gutterBottom>
         {title}
       </Typography>
+
+      {/* **Status Filter UI with Calendar Icon** */}
+      <Box mb={2} display='flex' alignItems='center' gap={2}>
+        <FormControl variant='outlined' size='small'>
+          <InputLabel id='status-filter-label'>Trạng thái</InputLabel>
+          <Select
+            labelId='status-filter-label'
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as string);
+              setPage(0);
+            }}
+            label='Trạng thái'
+            style={{ minWidth: 200 }}
+          >
+            {statusOptions.map((status) => (
+              <MenuItem key={status} value={status}>
+                {status}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <IconButton
+          color='primary'
+          onClick={handleOpenCalendar}
+          aria-label='Open Calendar'
+        >
+          <CalendarTodayIcon />
+        </IconButton>
+      </Box>
 
       {loading ? (
         <Box
@@ -293,31 +358,23 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
         </Box>
       ) : error ? (
         <Alert severity='error'>{error}</Alert>
-      ) : data.length === 0 ? (
+      ) : filteredData.length === 0 ? (
         <Typography>
           Không có dữ liệu{' '}
-          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'}.
+          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'} với trạng thái
+          "{statusFilter}".
         </Typography>
       ) : (
         <Paper>
           <TableContainer>
             <Table aria-labelledby='tableTitle' size='medium'>
-              <EnhancedTableHead
-                headCells={headCells}
-                order={order}
-                orderBy={orderBy}
-                onRequestSort={handleRequestSort}
-              />
               <TableBody>
                 {paginatedData.map((row) => (
                   <TableRow hover key={row.id}>
-                    <TableCell component='th' scope='row'>
-                      {formatDate(row.date)}
-                    </TableCell>
                     {type === 'bloodPressure' && isProcessedBP(row)
-                      ? renderBloodPressureRow(row)
+                      ? renderBloodPressureRow(row, formatDateTime)
                       : type === 'bloodSugar' && 'level' in row
-                      ? renderBloodSugarRow(row)
+                      ? renderBloodSugarRow(row, formatDateTime)
                       : null}
                   </TableRow>
                 ))}
@@ -327,7 +384,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component='div'
-            count={sortedData.length}
+            count={filteredData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -339,6 +396,21 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
           />
         </Paper>
       )}
+
+      {/* **Calendar Modal Placeholder** */}
+      <Dialog
+        open={openCalendar}
+        onClose={handleCloseCalendar}
+        fullWidth
+        maxWidth='sm'
+      >
+        <DialogTitle>Chọn Ngày</DialogTitle>
+        <Box p={2}>
+          <Typography>
+            Calendar functionality will be implemented in the next step.
+          </Typography>
+        </Box>
+      </Dialog>
     </Box>
   );
 };
