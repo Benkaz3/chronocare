@@ -1,40 +1,48 @@
+// src/App.tsx
+
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Dashboard from './components/Dashboard';
-import BloodPressure from './components/BloodPressure';
-import Test from './components/TestFirestoreAdd';
-import { AuthProvider } from './context/AuthProvider';
-import PrivateRoute from './components/PrivateRoute';
-import { CssBaseline } from '@mui/material';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from './pages/AuthPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import theme from './theme';
-import { ThemeProvider } from '@mui/material/styles';
+import Dashboard from './pages/Dashboard';
+import useAuth from './hooks/useAuth';
 
 const App: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    // You can replace this with a spinner or a more elaborate loading screen
+    return <div>Loading...</div>;
+  }
+
   return (
-    <ThemeProvider theme={theme}>
-      <AuthProvider>
-        <CssBaseline />
-        <Router>
-          <Routes>
-            <Route path='/' element={<AuthPage />} />
-            {/* <Route path='/dang-ky' element={<AuthPage />} /> */}
-            {/* <Route path='/test' element={<TestPage />} /> */}
-            <Route path='/reset-password' element={<ResetPasswordPage />} />
-            <Route element={<PrivateRoute />}>
-              <Route path='/dashboard' element={<Dashboard />} />
-              <Route path='/blood-pressure' element={<BloodPressure />} />
-              <Route
-                path='/blood-sugar'
-                element={<div>Blood Sugar Page</div>}
-              />
-              <Route path='/test' element={<Test />} />
-            </Route>
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+    <Routes>
+      {/* Default Route */}
+      <Route
+        path='/'
+        element={
+          user ? (
+            <Navigate to='/dashboard' replace />
+          ) : (
+            <Navigate to='/auth' replace />
+          )
+        }
+      />
+
+      {/* Authentication Route */}
+      <Route
+        path='/auth'
+        element={!user ? <AuthPage /> : <Navigate to='/dashboard' replace />}
+      />
+
+      {/* Protected Dashboard Route */}
+      <Route
+        path='/dashboard'
+        element={user ? <Dashboard /> : <Navigate to='/auth' replace />}
+      />
+
+      {/* Catch-All Route for Undefined Paths */}
+      <Route path='*' element={<Navigate to='/' replace />} />
+    </Routes>
   );
 };
 

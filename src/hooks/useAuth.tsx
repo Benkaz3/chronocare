@@ -1,6 +1,6 @@
-// src/hooks/useAuth.ts
+// src/hooks/useAuth.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GoogleAuthProvider,
@@ -8,6 +8,9 @@ import {
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  User,
   UserCredential,
 } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -51,7 +54,19 @@ const errorMessages: Record<FirebaseAuthErrorCode, React.ReactNode> = {
 const useAuth = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState<AuthMessage | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true); // Initially true while checking auth state
+  const [user, setUser] = useState<User | null>(null); // Current authenticated user
+
+  useEffect(() => {
+    // Set up the authentication state observer
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false); // Authentication status has been determined
+    });
+
+    // Clean up the listener on unmount
+    return () => unsubscribe();
+  }, []);
 
   const handleAuthError = (err: { code: FirebaseAuthErrorCode }) => {
     console.error('Authentication Error:', err);
@@ -147,17 +162,35 @@ const useAuth = () => {
     }
   };
 
+  const signOutUser = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      await firebaseSignOut(auth);
+      handleSuccess('Đăng xuất thành công!', '/auth');
+    } catch (err: any) {
+      console.error('Error signing out:', err);
+      setMessage({
+        type: 'error',
+        text: 'Đăng xuất không thành công. Vui lòng thử lại.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetAuthMessage = () => {
     setMessage(null);
   };
 
   return {
+    user,
+    loading,
     message,
     setMessage,
-    loading,
     signInWithProvider,
     signUpWithEmail,
     signInWithEmail,
+    signOut: signOutUser,
     resetAuthMessage,
   };
 };
