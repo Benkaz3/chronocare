@@ -61,9 +61,9 @@ const RecordForm: React.FC = () => {
   const { addReading, loading } = useUserData();
 
   // Trạng thái Huyết Áp
-  const [bpSystolic, setBpSystolic] = useState<string>('110');
-  const [bpDiastolic, setBpDiastolic] = useState<string>('76');
-  const [bpPulse, setBpPulse] = useState<string>('81');
+  const [bpSystolic, setBpSystolic] = useState<string>('');
+  const [bpDiastolic, setBpDiastolic] = useState<string>('');
+  const [bpPulse, setBpPulse] = useState<string>('');
 
   // Trạng thái Đường Huyết
   const [bsLevel, setBsLevel] = useState<string>('');
