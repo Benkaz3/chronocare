@@ -58,37 +58,45 @@ const RecordForm: React.FC = () => {
   const [tabValue, setTabValue] = useState<number>(0);
   const { addReading, loading } = useUserData();
 
-  // Trạng thái Huyết Áp
+  // Blood Pressure State
   const [bpSystolic, setBpSystolic] = useState<string>('');
   const [bpDiastolic, setBpDiastolic] = useState<string>('');
   const [bpPulse, setBpPulse] = useState<string>('');
 
-  // Trạng thái Đường Huyết
+  // Blood Sugar State
   const [bsLevel, setBsLevel] = useState<string>('');
 
-  // Thông tin Trạng thái
+  // Status Information
   const [bpStatusInfo, setBpStatusInfo] = useState<StatusInfo | null>(null);
   const [bsStatusInfo, setBsStatusInfo] = useState<StatusInfo | null>(null);
 
-  // Trạng thái Lỗi Xác thực
+  // Validation Errors
   const [bpValidationError, setBpValidationError] = useState<string>('');
   const [bsValidationError, setBsValidationError] = useState<string>('');
 
-  // Xử lý Thay đổi Tab
+  // Handle Tab Change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-    // Đặt lại các trường biểu mẫu và trạng thái khi chuyển đổi tab
-    setBpSystolic(newValue === 0 ? '110' : '');
-    setBpDiastolic(newValue === 0 ? '76' : '');
-    setBpPulse(newValue === 0 ? '81' : '');
-    setBsLevel(newValue === 1 ? '' : '');
+
+    if (newValue === 0) {
+      // Switching to BP tab
+      // Option A: Clear the BP fields
+      setBpSystolic('');
+      setBpDiastolic('');
+      setBpPulse('');
+    } else if (newValue === 1) {
+      // Switching to Blood Sugar tab
+      setBsLevel('');
+    }
+
+    // Clear status info and validation errors
     setBpStatusInfo(null);
     setBsStatusInfo(null);
     setBpValidationError('');
     setBsValidationError('');
   };
 
-  // Trợ giúp Xác thực
+  // Validation Functions
   const isBPValid = (): boolean => {
     const systolic = parseInt(bpSystolic, 10);
     const diastolic = parseInt(bpDiastolic, 10);
@@ -107,7 +115,7 @@ const RecordForm: React.FC = () => {
     return !isNaN(level) && level >= 50 && level <= 500;
   };
 
-  // Đánh giá Trạng thái khi Thay đổi Input
+  // Evaluate BP Status
   useEffect(() => {
     if (tabValue === 0) {
       if (bpSystolic && bpDiastolic) {
@@ -128,6 +136,7 @@ const RecordForm: React.FC = () => {
     }
   }, [bpSystolic, bpDiastolic, tabValue]);
 
+  // Evaluate BS Status
   useEffect(() => {
     if (tabValue === 1) {
       if (bsLevel) {
@@ -147,7 +156,7 @@ const RecordForm: React.FC = () => {
     }
   }, [bsLevel, tabValue]);
 
-  // Xử lý Gửi Form Huyết Áp
+  // Submit BP Form
   const handleBPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isBPValid()) {
@@ -168,19 +177,19 @@ const RecordForm: React.FC = () => {
 
     try {
       await addReading('bloodPressure', bpData);
-      // Đặt lại các trường biểu mẫu và trạng thái sau khi gửi
-      setBpSystolic('110');
-      setBpDiastolic('76');
-      setBpPulse('81');
+      // Reset BP fields after successful submission
+      setBpSystolic('');
+      setBpDiastolic('');
+      setBpPulse('');
       setBpStatusInfo(null);
       setBpValidationError('');
     } catch (err) {
-      // Xử lý lỗi từ backend
+      // Handle backend errors
       setBpValidationError('Thêm chỉ số huyết áp không thành công.');
     }
   };
 
-  // Xử lý Gửi Form Đường Huyết
+  // Submit BS Form
   const handleBSSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isBSValid()) {
@@ -197,12 +206,12 @@ const RecordForm: React.FC = () => {
 
     try {
       await addReading('bloodSugar', bsData);
-      // Đặt lại các trường biểu mẫu và trạng thái sau khi gửi
+      // Reset BS fields after successful submission
       setBsLevel('');
       setBsStatusInfo(null);
       setBsValidationError('');
     } catch (err) {
-      // Xử lý lỗi từ backend
+      // Handle backend errors
       setBsValidationError('Thêm chỉ số đường huyết không thành công.');
     }
   };
@@ -227,7 +236,7 @@ const RecordForm: React.FC = () => {
         />
       </Tabs>
 
-      {/* Biểu mẫu Huyết Áp */}
+      {/* Blood Pressure Form */}
       <TabPanel value={tabValue} index={0}>
         {bpStatusInfo && <StatusBar status={bpStatusInfo.status} />}
         {bpStatusInfo && bpStatusInfo.explanation && (
@@ -255,7 +264,10 @@ const RecordForm: React.FC = () => {
             value={bpSystolic}
             onChange={(e) => setBpSystolic(e.target.value)}
             type='number'
+            placeholder='VD: 120'
             inputProps={{ min: 80, max: 200 }}
+            helperText='Giá trị từ 80 đến 200 mm Hg'
+            error={bpValidationError !== '' && !isBPValid()}
           />
           <TextField
             label='Huyết áp tâm trương (mm Hg)'
@@ -266,7 +278,10 @@ const RecordForm: React.FC = () => {
             value={bpDiastolic}
             onChange={(e) => setBpDiastolic(e.target.value)}
             type='number'
+            placeholder='VD: 80'
             inputProps={{ min: 50, max: 120 }}
+            helperText='Giá trị từ 50 đến 120 mm Hg'
+            error={bpValidationError !== '' && !isBPValid()}
           />
           <TextField
             label='Nhịp tim (BPM)'
@@ -276,8 +291,14 @@ const RecordForm: React.FC = () => {
             value={bpPulse}
             onChange={(e) => setBpPulse(e.target.value)}
             type='number'
+            placeholder='VD: 75'
             inputProps={{ min: 40, max: 180 }}
-            helperText='Tùy chọn'
+            helperText='Giá trị từ 40 đến 180 BPM (không bắt buộc)'
+            error={
+              bpValidationError !== '' &&
+              bpPulse !== '' &&
+              (parseInt(bpPulse, 10) < 40 || parseInt(bpPulse, 10) > 180)
+            }
           />
           <Button
             type='submit'
@@ -292,7 +313,7 @@ const RecordForm: React.FC = () => {
         </form>
       </TabPanel>
 
-      {/* Biểu mẫu Đường Huyết */}
+      {/* Blood Sugar Form */}
       <TabPanel value={tabValue} index={1}>
         {bsStatusInfo && <StatusBar status={bsStatusInfo.status} />}
         {bsStatusInfo && bsStatusInfo.explanation && (
@@ -320,7 +341,10 @@ const RecordForm: React.FC = () => {
             value={bsLevel}
             onChange={(e) => setBsLevel(e.target.value)}
             type='number'
+            placeholder='VD: 90'
             inputProps={{ min: 50, max: 500 }}
+            helperText='Giá trị từ 50 đến 500 mg/dL'
+            error={bsValidationError !== '' && !isBSValid()}
           />
           <Button
             type='submit'
