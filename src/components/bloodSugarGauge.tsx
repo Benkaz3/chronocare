@@ -24,7 +24,7 @@ const BloodSugarGauge: React.FC<BloodSugarGaugeProps> = ({ level }) => {
   const [statusInfo, setStatusInfo] = useState<StatusInfo | null>(null);
 
   useEffect(() => {
-    // Determine the blood sugar category based on the level
+    // Xác định loại đường huyết dựa trên mức độ
     const getCategory = (bsLevel: number): BloodSugarCategory => {
       if (bsLevel <= 0) return 'Invalid';
 
@@ -38,68 +38,71 @@ const BloodSugarGauge: React.FC<BloodSugarGaugeProps> = ({ level }) => {
       return 'Invalid';
     };
 
-    // Map the category to a gauge value
+    // Ánh xạ loại sang giá trị trên thước đo
     const mapCategoryToGaugeValue = (category: BloodSugarCategory): number => {
       switch (category) {
         case 'Hypoglycemia':
-          return 10; // Midpoint of 0-20%
+          return 10; // Điểm giữa của 0-20%
         case 'Normal':
-          return 30; // Midpoint of 21-40%
+          return 30; // Điểm giữa của 21-40%
         case 'Elevated':
-          return 50; // Midpoint of 41-60%
+          return 50; // Điểm giữa của 41-60%
         case 'Prediabetes':
-          return 70; // Midpoint of 61-80%
+          return 70; // Điểm giữa của 61-80%
         case 'Diabetes':
-          return 90; // Midpoint of 81-100%
+          return 90; // Điểm giữa của 81-100%
         case 'Invalid':
         default:
-          return 0; // Represents an error state
+          return 0; // Đại diện cho trạng thái lỗi
       }
     };
 
-    // Get status information based on the category
+    // Lấy thông tin trạng thái dựa trên loại
     const getStatusInfo = (category: BloodSugarCategory): StatusInfo => {
       switch (category) {
         case 'Hypoglycemia':
           return {
-            status: 'Hạ Đường Huyết',
+            status: 'Hạ đường huyết',
             explanation: 'Chỉ số đường huyết của bạn thấp hơn mức bình thường.',
             action:
-              'Tiêu thụ carbohydrate nhanh và tham khảo ý kiến nhà cung cấp dịch vụ y tế.',
+              'Hãy ăn hoặc uống thực phẩm có chứa carbohydrate nhanh và tham khảo ý kiến bác sĩ.',
           };
         case 'Normal':
           return {
-            status: 'Bình Thường',
+            status: 'Bình thường',
             explanation:
-              'Chỉ số đường huyết của bạn nằm trong mức bình thường.',
-            action: 'Duy trì chế độ ăn uống cân bằng và tập thể dục đều đặn.',
+              'Chỉ số đường huyết của bạn đang nằm trong mức bình thường.',
+            action:
+              'Hãy duy trì chế độ ăn uống cân bằng và tập thể dục đều đặn.',
           };
         case 'Elevated':
           return {
-            status: 'Tăng Đường Huyết',
+            status: 'Tăng đường huyết',
             explanation: 'Chỉ số đường huyết của bạn cao hơn mức bình thường.',
-            action: 'Theo dõi chế độ ăn uống và hoạt động thể chất.',
+            action: 'Theo dõi chế độ ăn uống và tăng cường hoạt động thể chất.',
           };
         case 'Prediabetes':
           return {
-            status: 'Tiền Tiểu Đường',
-            explanation: 'Chỉ số đường huyết của bạn cho thấy tiền tiểu đường.',
+            status: 'Tiền tiểu đường',
+            explanation:
+              'Chỉ số đường huyết của bạn cho thấy nguy cơ tiền tiểu đường.',
             action:
-              'Áp dụng lối sống lành mạnh và tham khảo ý kiến nhà cung cấp dịch vụ y tế.',
+              'Áp dụng lối sống lành mạnh và tham khảo ý kiến bác sĩ để kiểm soát tốt hơn.',
           };
         case 'Diabetes':
           return {
-            status: 'Tiểu Đường',
-            explanation: 'Chỉ số đường huyết của bạn cho thấy tiểu đường.',
+            status: 'Tiểu đường',
+            explanation:
+              'Chỉ số đường huyết của bạn cho thấy bạn bị tiểu đường.',
             action:
-              'Tìm kiếm sự chăm sóc y tế và tuân thủ hướng dẫn của nhà cung cấp dịch vụ y tế.',
+              'Hãy tìm kiếm sự tư vấn và điều trị y tế từ bác sĩ để quản lý tình trạng này.',
           };
         case 'Invalid':
         default:
           return {
-            status: 'Không Xác Định',
-            explanation: 'Chỉ số đường huyết không hợp lệ.',
-            action: 'Vui lòng nhập chỉ số đường huyết hợp lệ.',
+            status: 'Không hợp lệ',
+            explanation: 'Chỉ số đường huyết bạn nhập không hợp lệ.',
+            action: 'Vui lòng nhập một chỉ số đường huyết hợp lệ.',
           };
       }
     };
@@ -113,7 +116,7 @@ const BloodSugarGauge: React.FC<BloodSugarGaugeProps> = ({ level }) => {
   return (
     <Paper elevation={3} style={{ padding: '20px' }}>
       <Box display='flex' flexDirection='column' gap={4}>
-        {/* Linear Gauge */}
+        {/* Thước đo tuyến tính */}
         <Box>
           <LinearGauge
             segments={bloodSugarSegments}
@@ -121,7 +124,7 @@ const BloodSugarGauge: React.FC<BloodSugarGaugeProps> = ({ level }) => {
           />
         </Box>
 
-        {/* Status Information */}
+        {/* Thông tin trạng thái */}
         {statusInfo && (
           <Box>
             <Typography variant='h6' gutterBottom>

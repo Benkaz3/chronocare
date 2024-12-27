@@ -27,15 +27,15 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
   } | null>(null);
 
   useEffect(() => {
-    // Function to determine the category based on SYS and DIA
+    // Hàm xác định danh mục dựa trên SYS và DIA
     const getCategory = (sys: number, dia: number): BloodPressureCategory => {
-      // Handle invalid inputs
+      // Xử lý đầu vào không hợp lệ
       if (sys <= 0 || dia <= 0) return 'Invalid';
 
       let sysCategory: BloodPressureCategory | null = null;
       let diaCategory: BloodPressureCategory | null = null;
 
-      // Determine SYS category
+      // Xác định danh mục SYS
       for (const range of bloodPressureRanges) {
         const [sysMin, sysMax] = range.systolic;
         if (sys >= sysMin && sys <= sysMax) {
@@ -44,7 +44,7 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
         }
       }
 
-      // Determine DIA category
+      // Xác định danh mục DIA
       for (const range of bloodPressureRanges) {
         const [diaMin, diaMax] = range.diastolic;
         if (dia >= diaMin && dia <= diaMax) {
@@ -53,11 +53,11 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
         }
       }
 
-      // Default to 'Normal' if categories not found
+      // Mặc định là 'Bình Thường' nếu không tìm thấy danh mục
       sysCategory = sysCategory || 'Normal';
       diaCategory = diaCategory || 'Normal';
 
-      // Determine the more severe category
+      // Xác định danh mục nghiêm trọng hơn
       const severityOrder: BloodPressureCategory[] = [
         'Hypotension',
         'Normal',
@@ -69,72 +69,72 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
       const sysIndex = severityOrder.indexOf(sysCategory);
       const diaIndex = severityOrder.indexOf(diaCategory);
 
-      // Select the category with higher index (more severe)
+      // Chọn danh mục có mức độ nghiêm trọng cao hơn
       const selectedCategory = sysIndex > diaIndex ? sysCategory : diaCategory;
 
       return selectedCategory;
     };
 
-    // Function to map category to gauge value
+    // Hàm ánh xạ danh mục sang giá trị đồng hồ đo
     const mapCategoryToGaugeValue = (
       category: BloodPressureCategory
     ): number => {
       switch (category) {
         case 'Hypotension':
-          return 10; // Midpoint of 0-20%
+          return 10; // Điểm giữa của 0-20%
         case 'Normal':
-          return 30; // Midpoint of 21-40%
+          return 30; // Điểm giữa của 21-40%
         case 'Prehypertension':
-          return 50; // Midpoint of 41-60%
+          return 50; // Điểm giữa của 41-60%
         case 'Stage 1 Hypertension':
-          return 70; // Midpoint of 61-80%
+          return 70; // Điểm giữa của 61-80%
         case 'Stage 2 Hypertension':
-          return 90; // Midpoint of 81-100%
+          return 90; // Điểm giữa của 81-100%
         case 'Invalid':
-          return 0; // Could represent an error state
+          return 0; // Có thể đại diện cho trạng thái lỗi
         default:
           return 0;
       }
     };
 
-    // Function to get status information based on category
+    // Hàm lấy thông tin trạng thái dựa trên danh mục
     const getStatusInfo = (category: BloodPressureCategory) => {
       switch (category) {
         case 'Hypotension':
           return {
-            status: 'Hypotension',
-            explanation: 'Your blood pressure is lower than normal.',
-            action: 'Consult a healthcare provider if you experience symptoms.',
+            status: 'Huyết áp thấp',
+            explanation: 'Huyết áp của bạn thấp hơn mức bình thường.',
+            action: 'Tham khảo ý kiến bác sĩ nếu bạn có triệu chứng.',
           };
         case 'Normal':
           return {
-            status: 'Normal',
-            explanation: 'Your blood pressure is within the normal range.',
-            action: 'Maintain a healthy lifestyle to keep it that way.',
+            status: 'Bình Thường',
+            explanation: 'Huyết áp của bạn trong khoảng bình thường.',
+            action: 'Duy trì lối sống lành mạnh để giữ mức này.',
           };
         case 'Prehypertension':
           return {
-            status: 'Prehypertension',
-            explanation: 'Your blood pressure is higher than normal.',
-            action: 'Consider lifestyle changes to lower your blood pressure.',
+            status: 'Tiền Tăng Huyết Áp',
+            explanation: 'Huyết áp của bạn cao hơn bình thường.',
+            action: 'Xem xét thay đổi lối sống để giảm huyết áp.',
           };
         case 'Stage 1 Hypertension':
           return {
-            status: 'Stage 1 Hypertension',
-            explanation: 'Your blood pressure is in Stage 1 Hypertension.',
-            action: 'Consult your healthcare provider for possible treatment.',
+            status: 'Tăng Huyết Áp Giai Đoạn 1',
+            explanation: 'Huyết áp của bạn ở mức Tăng Huyết Áp Giai Đoạn 1.',
+            action: 'Tham khảo ý kiến bác sĩ để có thể điều trị.',
           };
         case 'Stage 2 Hypertension':
           return {
-            status: 'Stage 2 Hypertension',
-            explanation: 'Your blood pressure is in Stage 2 Hypertension.',
-            action: 'Seek medical attention immediately.',
+            status: 'Tăng Huyết Áp Giai Đoạn 2',
+            explanation: 'Huyết áp của bạn ở mức Tăng Huyết Áp Giai Đoạn 2.',
+            action: 'Hãy tìm kiếm sự chăm sóc y tế ngay lập tức.',
           };
         case 'Invalid':
           return {
-            status: 'Invalid Input',
-            explanation: 'Blood pressure values must be positive numbers.',
-            action: 'Please enter valid blood pressure readings.',
+            status: 'Dữ liệu không hợp lệ',
+            explanation: 'Giá trị huyết áp phải là số dương.',
+            action: 'Vui lòng nhập giá trị huyết áp hợp lệ.',
           };
         default:
           return null;
@@ -150,7 +150,7 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
   return (
     <Paper elevation={3} style={{ padding: '20px' }}>
       <Box display='flex' flexDirection='column' gap={4}>
-        {/* Linear Gauge */}
+        {/* Đồng Hồ Đo Tuyến Tính */}
         <Box>
           <LinearGauge
             segments={bloodPressureSegments}
@@ -158,7 +158,7 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
           />
         </Box>
 
-        {/* Status Information */}
+        {/* Thông Tin Trạng Thái */}
         {/* {statusInfo && (
           <Box>
             <Typography variant='h6' gutterBottom>
