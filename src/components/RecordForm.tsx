@@ -1,38 +1,16 @@
+// src/components/RecordForm.tsx
+
 import React, { useState, useEffect } from 'react';
-import {
-  Tabs,
-  Tab,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-} from '@mui/material';
+import { Tabs, Tab, Box, TextField, Button, Alert } from '@mui/material';
 import { BloodPressureData, BloodSugarData } from '../firebase';
 import useUserData from '../hooks/useUserData';
-import {
-  evaluateBPStatus,
-  evaluateBSStatus,
-  BPStatus,
-  BSStatus,
-} from '../utils/statusUtils';
-import StatusBar from './StatusBar';
-
+import { evaluateBPStatus } from '../utils/evaluateBPStatus';
+import BloodPressureGauge from './BloodPressureGauge';
+import BloodSugarGauge from './bloodSugarGauge';
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
-}
-
-interface StatusInfo {
-  status: BPStatus | BSStatus;
-  explanation: string;
-  action: string;
-  range: {
-    min: number;
-    max: number;
-    color: string;
-  };
 }
 
 const TabPanel: React.FC<TabPanelProps> = ({
@@ -66,13 +44,14 @@ const RecordForm: React.FC = () => {
   // Blood Sugar State
   const [bsLevel, setBsLevel] = useState<string>('');
 
-  // Status Information
-  const [bpStatusInfo, setBpStatusInfo] = useState<StatusInfo | null>(null);
-  const [bsStatusInfo, setBsStatusInfo] = useState<StatusInfo | null>(null);
-
   // Validation Errors
   const [bpValidationError, setBpValidationError] = useState<string>('');
   const [bsValidationError, setBsValidationError] = useState<string>('');
+
+  // Numeric Values for Gauge and Status Evaluation
+  const [bpSystolicNum, setBpSystolicNum] = useState<number>(0);
+  const [bpDiastolicNum, setBpDiastolicNum] = useState<number>(0);
+  const [bsLevelNum, setBsLevelNum] = useState<number>(0);
 
   // Handle Tab Change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -80,33 +59,22 @@ const RecordForm: React.FC = () => {
 
     if (newValue === 0) {
       // Switching to BP tab
-      // Option A: Clear the BP fields
-      setBpSystolic('');
-      setBpDiastolic('');
-      setBpPulse('');
     } else if (newValue === 1) {
       // Switching to Blood Sugar tab
-      setBsLevel('');
     }
 
-    // Clear status info and validation errors
-    setBpStatusInfo(null);
-    setBsStatusInfo(null);
+    // Clear validation errors
     setBpValidationError('');
     setBsValidationError('');
   };
 
   // Validation Functions
   const isBPValid = (): boolean => {
-    const systolic = parseInt(bpSystolic, 10);
-    const diastolic = parseInt(bpDiastolic, 10);
     return (
-      !isNaN(systolic) &&
-      systolic >= 80 &&
-      systolic <= 200 &&
-      !isNaN(diastolic) &&
-      diastolic >= 50 &&
-      diastolic <= 120
+      bpSystolicNum >= 80 &&
+      bpSystolicNum <= 200 &&
+      bpDiastolicNum >= 50 &&
+      bpDiastolicNum <= 120
     );
   };
 
@@ -120,41 +88,47 @@ const RecordForm: React.FC = () => {
     if (tabValue === 0) {
       if (bpSystolic && bpDiastolic) {
         if (isBPValid()) {
-          const systolic = parseInt(bpSystolic, 10);
-          const diastolic = parseInt(bpDiastolic, 10);
-          const statusInfo = evaluateBPStatus(systolic, diastolic);
-          setBpStatusInfo(statusInfo);
+          evaluateBPStatus(bpSystolicNum, bpDiastolicNum);
           setBpValidationError('');
         } else {
-          setBpStatusInfo(null);
           setBpValidationError('Vui lòng nhập các chỉ số huyết áp hợp lệ.');
         }
       } else {
-        setBpStatusInfo(null);
         setBpValidationError('');
       }
     }
-  }, [bpSystolic, bpDiastolic, tabValue]);
+  }, [bpSystolic, bpDiastolic, bpSystolicNum, bpDiastolicNum, tabValue]);
 
-  // Evaluate BS Status
-  useEffect(() => {
-    if (tabValue === 1) {
-      if (bsLevel) {
-        if (isBSValid()) {
-          const level = parseFloat(bsLevel);
-          const statusInfo = evaluateBSStatus(level);
-          setBsStatusInfo(statusInfo);
-          setBsValidationError('');
-        } else {
-          setBsStatusInfo(null);
-          setBsValidationError('Vui lòng nhập chỉ số đường huyết hợp lệ.');
-        }
-      } else {
-        setBsStatusInfo(null);
-        setBsValidationError('');
-      }
+  // Handle Input Changes
+  const handleSystolicInputChange = (value: string) => {
+    setBpSystolic(value);
+    const num = parseInt(value, 10);
+    if (!isNaN(num)) {
+      setBpSystolicNum(num);
+    } else {
+      setBpSystolicNum(0);
     }
-  }, [bsLevel, tabValue]);
+  };
+
+  const handleDiastolicInputChange = (value: string) => {
+    setBpDiastolic(value);
+    const num = parseInt(value, 10);
+    if (!isNaN(num)) {
+      setBpDiastolicNum(num);
+    } else {
+      setBpDiastolicNum(0);
+    }
+  };
+
+  const handleBsLevelInputChange = (value: string) => {
+    setBsLevel(value);
+    const num = parseFloat(value);
+    if (!isNaN(num)) {
+      setBsLevelNum(num);
+    } else {
+      setBsLevelNum(0);
+    }
+  };
 
   // Submit BP Form
   const handleBPSubmit = async (e: React.FormEvent) => {
@@ -164,13 +138,11 @@ const RecordForm: React.FC = () => {
       return;
     }
 
-    const systolic = parseInt(bpSystolic, 10);
-    const diastolic = parseInt(bpDiastolic, 10);
     const pulse = bpPulse ? parseInt(bpPulse, 10) : 0;
 
     const bpData: BloodPressureData = {
-      systolic,
-      diastolic,
+      systolic: bpSystolicNum,
+      diastolic: bpDiastolicNum,
       pulse,
       time: new Date().toISOString(),
     };
@@ -181,7 +153,8 @@ const RecordForm: React.FC = () => {
       setBpSystolic('');
       setBpDiastolic('');
       setBpPulse('');
-      setBpStatusInfo(null);
+      setBpSystolicNum(0);
+      setBpDiastolicNum(0);
       setBpValidationError('');
     } catch (err) {
       // Handle backend errors
@@ -208,7 +181,7 @@ const RecordForm: React.FC = () => {
       await addReading('bloodSugar', bsData);
       // Reset BS fields after successful submission
       setBsLevel('');
-      setBsStatusInfo(null);
+      setBsLevelNum(0);
       setBsValidationError('');
     } catch (err) {
       // Handle backend errors
@@ -238,17 +211,13 @@ const RecordForm: React.FC = () => {
 
       {/* Blood Pressure Form */}
       <TabPanel value={tabValue} index={0}>
-        {bpStatusInfo && <StatusBar status={bpStatusInfo.status} />}
-        {bpStatusInfo && bpStatusInfo.explanation && (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant='body1'>{bpStatusInfo.explanation}</Typography>
-            {bpStatusInfo.action && (
-              <Typography variant='body2' color='textSecondary'>
-                Khuyến cáo: {bpStatusInfo.action}
-              </Typography>
-            )}
-          </Box>
-        )}
+        {/* BloodPressureGauge */}
+        <BloodPressureGauge
+          systolic={bpSystolicNum}
+          diastolic={bpDiastolicNum}
+        />
+        {/* End of BloodPressureGauge */}
+
         {bpValidationError && (
           <Alert severity='error' sx={{ mt: 2 }}>
             {bpValidationError}
@@ -262,7 +231,7 @@ const RecordForm: React.FC = () => {
             required
             margin='normal'
             value={bpSystolic}
-            onChange={(e) => setBpSystolic(e.target.value)}
+            onChange={(e) => handleSystolicInputChange(e.target.value)}
             type='number'
             placeholder='VD: 120'
             inputProps={{ min: 80, max: 200 }}
@@ -276,7 +245,7 @@ const RecordForm: React.FC = () => {
             required
             margin='normal'
             value={bpDiastolic}
-            onChange={(e) => setBpDiastolic(e.target.value)}
+            onChange={(e) => handleDiastolicInputChange(e.target.value)}
             type='number'
             placeholder='VD: 80'
             inputProps={{ min: 50, max: 120 }}
@@ -315,17 +284,10 @@ const RecordForm: React.FC = () => {
 
       {/* Blood Sugar Form */}
       <TabPanel value={tabValue} index={1}>
-        {bsStatusInfo && <StatusBar status={bsStatusInfo.status} />}
-        {bsStatusInfo && bsStatusInfo.explanation && (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant='body1'>{bsStatusInfo.explanation}</Typography>
-            {bsStatusInfo.action && (
-              <Typography variant='body2' color='textSecondary'>
-                Khuyến cáo: {bsStatusInfo.action}
-              </Typography>
-            )}
-          </Box>
-        )}
+        {/* BloodSugarGauge */}
+        <BloodSugarGauge level={bsLevelNum} />
+        {/* End of BloodSugarGauge */}
+
         {bsValidationError && (
           <Alert severity='error' sx={{ mt: 2 }}>
             {bsValidationError}
@@ -339,7 +301,7 @@ const RecordForm: React.FC = () => {
             required
             margin='normal'
             value={bsLevel}
-            onChange={(e) => setBsLevel(e.target.value)}
+            onChange={(e) => handleBsLevelInputChange(e.target.value)}
             type='number'
             placeholder='VD: 90'
             inputProps={{ min: 50, max: 500 }}
