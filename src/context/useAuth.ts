@@ -51,7 +51,7 @@ const errorMessages: Record<FirebaseAuthErrorCode, string> = {
 };
 
 // Interface for the hook's return type
-interface UseAuthReturn {
+export interface UseAuthReturn {
   user: User | null;
   loading: boolean;
   error: Error | null; // Added error property
@@ -327,7 +327,7 @@ const useAuth = (): UseAuthReturn => {
     setError(null); // Optionally reset the error state as well
   };
 
-  return {
+  const returnValue: UseAuthReturn = {
     user,
     loading,
     error, // Include error in the returned object
@@ -339,6 +339,7 @@ const useAuth = (): UseAuthReturn => {
     signOut: signOutUser,
     resetAuthMessage,
   };
+  return returnValue;
 };
 
 export default useAuth;

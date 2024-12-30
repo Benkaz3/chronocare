@@ -10,25 +10,25 @@ import StatsPage from './pages/Dashboard/StatsPage';
 import SettingsPage from './pages/Dashboard/SettingsPage';
 import useAuth from './hooks/useAuth';
 import Spinner from './components/Spinner';
-import { Alert, Box } from '@mui/material';
+// import { Alert, Box } from '@mui/material';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const App: React.FC = () => {
-  const { user, loading, error } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <Spinner />;
   }
 
-  if (error) {
-    return (
-      <Box mt={2} mx={2}>
-        <Alert severity='error'>
-          {error.message || 'Đã xảy ra lỗi trong quá trình xác thực.'}
-        </Alert>
-      </Box>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <Box mt={2} mx={2}>
+  //       <Alert severity='error'>
+  //         {error.message || 'Đã xảy ra lỗi trong quá trình xác thực.'}
+  //       </Alert>
+  //     </Box>
+  //   );
+  // }
 
   return (
     <Routes>
