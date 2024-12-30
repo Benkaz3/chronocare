@@ -437,8 +437,8 @@ const RecordForm: React.FC = () => {
             }}
           >
             <NumberAutocomplete
-              label='T.Thu'
-              unit='mm Hg'
+              label='Systolic'
+              unit='mmHg'
               value={bloodPressure.systolic}
               options={systolicOptions}
               onChange={handleBPChange('systolic')}
@@ -450,8 +450,8 @@ const RecordForm: React.FC = () => {
             />
 
             <NumberAutocomplete
-              label='T.Trương'
-              unit='mm Hg'
+              label='Diastolic'
+              unit='mmHg'
               value={bloodPressure.diastolic}
               options={diastolicOptions}
               onChange={handleBPChange('diastolic')}
