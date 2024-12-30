@@ -1,21 +1,18 @@
 import React from 'react';
-import { Grid, Paper, Typography } from '@mui/material';
+import { Grid, Paper } from '@mui/material';
 import BloodPressureChart from '../../components/BloodPressureChart';
 import BloodSugarChart from '../../components/BloodSugarChart';
 
 const StatsPage: React.FC = () => (
   <div>
-    <Typography variant='h5' gutterBottom>
-      Biểu đồ
-    </Typography>
     <Grid container spacing={3}>
       <Grid item xs={12} md={6}>
-        <Paper elevation={3} sx={{ padding: 2 }}>
+        <Paper elevation={0} sx={{ padding: 1 }}>
           <BloodPressureChart />
         </Paper>
       </Grid>
       <Grid item xs={12} md={6}>
-        <Paper elevation={3} sx={{ padding: 2 }}>
+        <Paper elevation={0} sx={{ padding: 1 }}>
           <BloodSugarChart />
         </Paper>
       </Grid>

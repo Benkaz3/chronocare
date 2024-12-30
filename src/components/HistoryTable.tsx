@@ -406,9 +406,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
       >
         <DialogTitle>Chọn Ngày</DialogTitle>
         <Box p={2}>
-          <Typography>
-            Calendar functionality will be implemented in the next step.
-          </Typography>
+          <Typography>Opps, không có gì! Liu liu! 👻</Typography>
         </Box>
       </Dialog>
     </Box>

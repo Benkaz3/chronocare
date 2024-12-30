@@ -1,7 +1,7 @@
 // src/components/LinearGauge.tsx
 
 import { useState, useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import React from 'react';
@@ -41,13 +41,13 @@ const Heart = styled(FavoriteIcon)(() => ({
   color: '#DE0D92',
 }));
 
-const Label = styled(Typography)({
-  position: 'absolute',
-  transform: 'translateX(-50%)',
-  top: '-20px',
-  whiteSpace: 'nowrap',
-  zIndex: 3,
-});
+// const Label = styled(Typography)({
+//   position: 'absolute',
+//   transform: 'translateX(-50%)',
+//   top: '-20px',
+//   whiteSpace: 'nowrap',
+//   zIndex: 3,
+// });
 
 // Constrain TLabel to extend React.ReactNode
 const LinearGauge = <TLabel extends React.ReactNode>({
@@ -66,11 +66,9 @@ const LinearGauge = <TLabel extends React.ReactNode>({
 
   // Determine the current segment based on currentValue
   let cumulative = 0;
-  let currentSegment: GaugeSegment<TLabel> | null = null;
   for (const segment of segments) {
     cumulative += segment.value;
     if (clampedValue <= cumulative) {
-      currentSegment = segment;
       break;
     }
   }
@@ -110,11 +108,11 @@ const LinearGauge = <TLabel extends React.ReactNode>({
       {/* Heart Needle */}
       <Heart sx={{ left: `${positionPercentage * 100}%` }} />
       {/* Current Label */}
-      {currentSegment && !isTransitioning && (
+      {/* {currentSegment && !isTransitioning && (
         <Label variant='h6' style={{ left: `${positionPercentage * 100}%` }}>
           {currentSegment.label}
         </Label>
-      )}
+      )} */}
     </GaugeContainer>
   );
 };

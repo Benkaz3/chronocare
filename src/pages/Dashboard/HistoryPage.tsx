@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs, Tab, Box, Typography, Paper } from '@mui/material';
+import { Tabs, Tab, Box } from '@mui/material';
 import { useState } from 'react';
 import HistoryTable from '../../components/HistoryTable';
 
@@ -11,10 +11,7 @@ const HistoryPage: React.FC = () => {
   };
 
   return (
-    <Paper elevation={3} sx={{ padding: 2 }}>
-      <Typography variant='h5' gutterBottom>
-        Lịch sử
-      </Typography>
+    <Box>
       <Tabs
         value={tabIndex}
         onChange={handleTabChange}
@@ -27,7 +24,7 @@ const HistoryPage: React.FC = () => {
         {tabIndex === 0 && <HistoryTable type='bloodPressure' title='' />}
         {tabIndex === 1 && <HistoryTable type='bloodSugar' title='' />}
       </Box>
-    </Paper>
+    </Box>
   );
 };
 

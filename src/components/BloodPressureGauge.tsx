@@ -1,7 +1,7 @@
 // src/components/BloodPressureGauge.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Box, Paper } from '@mui/material';
+import { Box, Typography, Alert } from '@mui/material';
 import LinearGauge from './LinearGauge';
 import { bloodPressureSegments } from '../constants/bloodPressureSegments';
 import {
@@ -20,10 +20,11 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
 }) => {
   const [gaugeValue, setGaugeValue] = useState<number>(0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [, setStatusInfo] = useState<{
+  const [statusInfo, setStatusInfo] = useState<{
     status: string;
     explanation: string;
     action: string;
+    color: string;
   } | null>(null);
 
   useEffect(() => {
@@ -61,7 +62,7 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
       const severityOrder: BloodPressureCategory[] = [
         'Hypotension',
         'Normal',
-        'Prehypertension',
+        'Elevated',
         'Stage 1 Hypertension',
         'Stage 2 Hypertension',
       ];
@@ -84,7 +85,7 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
           return 10; // Điểm giữa của 0-20%
         case 'Normal':
           return 30; // Điểm giữa của 21-40%
-        case 'Prehypertension':
+        case 'Elevated':
           return 50; // Điểm giữa của 41-60%
         case 'Stage 1 Hypertension':
           return 70; // Điểm giữa của 61-80%
@@ -105,36 +106,42 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
             status: 'Huyết áp thấp',
             explanation: 'Huyết áp của bạn thấp hơn mức bình thường.',
             action: 'Tham khảo ý kiến bác sĩ nếu bạn có triệu chứng.',
+            color: '#2196f3', // Blue
           };
         case 'Normal':
           return {
             status: 'Bình Thường',
             explanation: 'Huyết áp của bạn trong khoảng bình thường.',
             action: 'Duy trì lối sống lành mạnh để giữ mức này.',
+            color: '#4caf50', // Green
           };
-        case 'Prehypertension':
+        case 'Elevated':
           return {
             status: 'Tiền Tăng Huyết Áp',
             explanation: 'Huyết áp của bạn cao hơn bình thường.',
             action: 'Xem xét thay đổi lối sống để giảm huyết áp.',
+            color: '#ff9800', // Orange
           };
         case 'Stage 1 Hypertension':
           return {
             status: 'Tăng Huyết Áp Giai Đoạn 1',
             explanation: 'Huyết áp của bạn ở mức Tăng Huyết Áp Giai Đoạn 1.',
             action: 'Tham khảo ý kiến bác sĩ để có thể điều trị.',
+            color: '#f44336', // Red
           };
         case 'Stage 2 Hypertension':
           return {
             status: 'Tăng Huyết Áp Giai Đoạn 2',
             explanation: 'Huyết áp của bạn ở mức Tăng Huyết Áp Giai Đoạn 2.',
             action: 'Hãy tìm kiếm sự chăm sóc y tế ngay lập tức.',
+            color: '#b71c1c', // Dark Red
           };
         case 'Invalid':
           return {
-            status: 'Dữ liệu không hợp lệ',
-            explanation: 'Giá trị huyết áp phải là số dương.',
-            action: 'Vui lòng nhập giá trị huyết áp hợp lệ.',
+            status: 'Nhập chỉ số để thấy trạng thái huyết áp',
+            explanation: '',
+            action: '',
+            color: '', // No color
           };
         default:
           return null;
@@ -147,10 +154,28 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
     setStatusInfo(getStatusInfo(category));
   }, [systolic, diastolic]);
 
+  const getAlertSeverity = (
+    status: string
+  ): 'success' | 'info' | 'warning' | 'error' => {
+    switch (status) {
+      case 'Bình Thường':
+        return 'success';
+      case 'Tiền Tăng Huyết Áp':
+        return 'warning';
+      case 'Tăng Huyết Áp Giai Đoạn 1':
+      case 'Tăng Huyết Áp Giai Đoạn 2':
+        return 'error';
+      case 'Huyết áp thấp':
+        return 'info';
+      default:
+        return 'info';
+    }
+  };
+
   return (
-    <Paper elevation={3} style={{ padding: '20px' }}>
-      <Box display='flex' flexDirection='column' gap={4}>
-        {/* Đồng Hồ Đo Tuyến Tính */}
+    // <Paper elevation={3} style={{ padding: '20px' }}>
+    <Box>
+      <Box display='flex' flexDirection='column' gap={1}>
         <Box>
           <LinearGauge
             segments={bloodPressureSegments}
@@ -159,21 +184,27 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
         </Box>
 
         {/* Thông Tin Trạng Thái */}
-        {/* {statusInfo && (
-          <Box>
-            <Typography variant='h6' gutterBottom>
-              {statusInfo.status}
-            </Typography>
-            <Typography variant='body1' gutterBottom>
-              {statusInfo.explanation}
-            </Typography>
-            <Typography variant='body2' color='textSecondary'>
-              {statusInfo.action}
-            </Typography>
+        {statusInfo && (
+          <Box sx={{ minHeight: '150px', mt: 0 }}>
+            <Alert severity={getAlertSeverity(statusInfo.status)}>
+              <Typography
+                variant='h6'
+                gutterBottom
+                sx={{ color: statusInfo.color || 'inherit' }} // Dynamically apply color if available
+              >
+                {statusInfo.status}
+              </Typography>
+              <Typography variant='body2' gutterBottom>
+                {statusInfo.explanation}
+              </Typography>
+              <Typography variant='body2'>{statusInfo.action}</Typography>
+            </Alert>
           </Box>
-        )} */}
+        )}
       </Box>
-    </Paper>
+    </Box>
+
+    // </Paper>
   );
 };
 

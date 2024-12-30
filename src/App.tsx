@@ -9,16 +9,30 @@ import HistoryPage from './pages/Dashboard/HistoryPage';
 import StatsPage from './pages/Dashboard/StatsPage';
 import SettingsPage from './pages/Dashboard/SettingsPage';
 import useAuth from './hooks/useAuth';
+import Spinner from './components/Spinner';
+import { Alert, Box } from '@mui/material';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, error } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Spinner />;
+  }
+
+  if (error) {
+    return (
+      <Box mt={2} mx={2}>
+        <Alert severity='error'>
+          {error.message || 'Đã xảy ra lỗi trong quá trình xác thực.'}
+        </Alert>
+      </Box>
+    );
   }
 
   return (
     <Routes>
+      {/* Root Route */}
       <Route
         path='/'
         element={
@@ -29,23 +43,33 @@ const App: React.FC = () => {
           )
         }
       />
+
+      {/* Authentication Route */}
       <Route
         path='/auth'
         element={
           !user ? <AuthPage /> : <Navigate to='/dashboard/record' replace />
         }
       />
+
+      {/* Dashboard Routes Protected by ProtectedRoute */}
       <Route
-        path='/dashboard'
-        element={user ? <Dashboard /> : <Navigate to='/auth' replace />}
+        path='/dashboard/*'
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
       >
         <Route path='record' element={<RecordPage />} />
         <Route path='history' element={<HistoryPage />} />
         <Route path='stats' element={<StatsPage />} />
         <Route path='settings' element={<SettingsPage />} />
-        <Route index element={<Navigate to='record' replace />} />
+        {/* Redirect any unknown nested routes to /dashboard/record */}
         <Route path='*' element={<Navigate to='record' replace />} />
       </Route>
+
+      {/* Catch-All Route */}
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
   );

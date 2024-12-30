@@ -7,7 +7,7 @@ const SettingsPage: React.FC = () => (
       Cài đặt
     </Typography>
     {/* Future settings go here */}
-    <Typography variant='body1'>Trang cài đặt đang được xây dựng.</Typography>
+    <Typography variant='body1'>Opps, không có gì! Liu liu! 👻</Typography>
   </Paper>
 );
 

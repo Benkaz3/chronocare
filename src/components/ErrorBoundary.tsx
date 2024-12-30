@@ -39,8 +39,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           height='100vh'
           textAlign='center'
           padding={2}
+          bgcolor='#f5f5f5' // Optional: Background color for better visibility
         >
-          <Typography variant='h4' gutterBottom>
+          <Typography variant='h4' gutterBottom color='error'>
             Bị lỗi òi! Có gì đó sai sai!
           </Typography>
           <Typography variant='body1' gutterBottom>
