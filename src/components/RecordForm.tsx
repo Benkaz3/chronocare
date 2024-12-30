@@ -1,6 +1,6 @@
 // src/components/RecordForm.tsx
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Tabs,
   Tab,
@@ -18,75 +18,171 @@ import useUserData from '../hooks/useUserData';
 import { evaluateBPStatus, StatusInfo } from '../utils/evaluateBPStatus';
 import BloodPressureGauge from './BloodPressureGauge';
 import BloodSugarGauge from './BloodSugarGauge';
+
+// Interface for TabPanel Props
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
 
+// Reusable TabPanel Component
 const TabPanel: React.FC<TabPanelProps> = ({
   children,
   value,
   index,
   ...other
-}) => {
-  return (
-    <div
-      role='tabpanel'
-      hidden={value !== index}
-      id={`record-form-tabpanel-${index}`}
-      aria-labelledby={`record-form-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ mt: 2 }}>{children}</Box>}
-    </div>
-  );
-};
+}) => (
+  <div
+    role='tabpanel'
+    hidden={value !== index}
+    id={`record-form-tabpanel-${index}`}
+    aria-labelledby={`record-form-tab-${index}`}
+    {...other}
+  >
+    {value === index && <Box sx={{ mt: 2 }}>{children}</Box>}
+  </div>
+);
 
+// Interface for NumberAutocomplete Props
+interface NumberAutocompleteProps {
+  label: string;
+  unit: string;
+  value: string;
+  options: string[];
+  onChange: (
+    event: React.SyntheticEvent<Element, Event>,
+    newValue: string | null
+  ) => void;
+  min: number;
+  max: number;
+  error?: boolean;
+  'aria-label': string;
+  width: number | string;
+}
+
+// Reusable NumberAutocomplete Component
+const NumberAutocomplete: React.FC<NumberAutocompleteProps> = ({
+  label,
+  unit,
+  value,
+  options,
+  onChange,
+  min,
+  max,
+  error = false,
+  'aria-label': ariaLabel,
+  width,
+}) => (
+  <Autocomplete
+    freeSolo
+    options={options}
+    value={value}
+    disableClearable
+    onInputChange={onChange}
+    renderInput={(params) => (
+      <Box sx={{ textAlign: 'center', width }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.3,
+          }}
+        >
+          <Typography variant='body1' component='label' htmlFor={params.id}>
+            {label}
+          </Typography>
+          <Typography variant='caption'>{unit}</Typography>
+        </Box>
+        <TextField
+          {...params}
+          variant='outlined'
+          required
+          type='number'
+          inputProps={{
+            ...params.inputProps,
+            min,
+            max,
+            style: { textAlign: 'center' },
+            'aria-label': ariaLabel,
+          }}
+          error={error}
+          aria-invalid={error}
+        />
+      </Box>
+    )}
+  />
+);
+
+// Interface for FormAlert Props
+interface FormAlertProps {
+  successMessage?: string;
+  errorMessage?: string;
+}
+
+// Reusable FormAlert Component
+const FormAlert: React.FC<FormAlertProps> = ({
+  successMessage,
+  errorMessage,
+}) => (
+  <Box sx={{ minHeight: '65px', mt: 2 }}>
+    {successMessage && <Alert severity='success'>{successMessage}</Alert>}
+    {errorMessage && <Alert severity='error'>{errorMessage}</Alert>}
+  </Box>
+);
+
+// Main RecordForm Component
 const RecordForm: React.FC = () => {
   const [tabValue, setTabValue] = useState<number>(0);
   const { addReading, loading } = useUserData();
 
-  // Initialize with "Normal" Range Values or from localStorage
-  // Blood Pressure State
-  const [bpSystolic, setBpSystolic] = useState<string>('120');
-  const [bpDiastolic, setBpDiastolic] = useState<string>('80');
-  const [bpPulse, setBpPulse] = useState<string>('70');
+  // State Management
+  const [bloodPressure, setBloodPressure] = useState({
+    systolic: '120',
+    diastolic: '80',
+    pulse: '70',
+  });
 
-  // Blood Sugar State
-  const [bsLevel, setBsLevel] = useState<string>('75');
+  const [bloodSugar, setBloodSugar] = useState({
+    level: '75',
+  });
 
-  // Validation Errors
-  const [bpValidationError, setBpValidationError] = useState<string>('');
-  const [bsValidationError, setBsValidationError] = useState<string>('');
+  const [errors, setErrors] = useState({
+    bp: '',
+    bs: '',
+    bpPulse: '',
+  });
 
-  // Success Messages
-  const [bpSuccessMessage, setBpSuccessMessage] = useState<string>('');
-  const [bsSuccessMessage, setBsSuccessMessage] = useState<string>('');
+  const [successMessages, setSuccessMessages] = useState({
+    bp: '',
+    bs: '',
+  });
 
-  // Numeric Values for Gauge and Status Evaluation
-  const [bpSystolicNum, setBpSystolicNum] = useState<number>(120);
-  const [bpDiastolicNum, setBpDiastolicNum] = useState<number>(80);
-  const [bpPulseNum, setBpPulseNum] = useState<number>(70);
-  const [bsLevelNum, setBsLevelNum] = useState<number>(75);
+  const [numericValues, setNumericValues] = useState({
+    bpSystolic: 120,
+    bpDiastolic: 80,
+    bpPulse: 70,
+    bsLevel: 75,
+  });
 
   const [, setBpStatusInfo] = useState<StatusInfo | null>(null);
 
   // Autocomplete Options (Memoized for Performance)
   const systolicOptions = useMemo(
-    () => Array.from({ length: 121 }, (_, i) => 80 + i), // 80-200
+    () => Array.from({ length: 121 }, (_, i) => (80 + i).toString()),
     []
   );
   const diastolicOptions = useMemo(
-    () => Array.from({ length: 71 }, (_, i) => 50 + i), // 50-120
+    () => Array.from({ length: 71 }, (_, i) => (50 + i).toString()),
     []
   );
   const pulseOptions = useMemo(
-    () => Array.from({ length: 141 }, (_, i) => 40 + i), // 40-180
+    () => Array.from({ length: 141 }, (_, i) => (40 + i).toString()),
     []
   );
   const bloodSugarOptions = useMemo(
-    () => Array.from({ length: 451 }, (_, i) => 50 + i), // 50-500
+    () => Array.from({ length: 451 }, (_, i) => (50 + i).toString()),
     []
   );
 
@@ -95,164 +191,171 @@ const RecordForm: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Handle Tab Change
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-
-    // Clear validation and success messages
-    setBpValidationError('');
-    setBsValidationError('');
-    setBpSuccessMessage('');
-    setBsSuccessMessage('');
-  };
+  const handleTabChange = useCallback(
+    (_event: React.SyntheticEvent, newValue: number) => {
+      setTabValue(newValue);
+      // Clear messages when switching tabs
+      setErrors({ bp: '', bs: '', bpPulse: '' });
+      setSuccessMessages({ bp: '', bs: '' });
+    },
+    []
+  );
 
   // Validation Functions
-  const isBPValid = (): boolean => {
+  const isBPValid = useCallback((): boolean => {
+    const { bpSystolic, bpDiastolic } = numericValues;
     return (
-      bpSystolicNum >= 80 &&
-      bpSystolicNum <= 200 &&
-      bpDiastolicNum >= 50 &&
-      bpDiastolicNum <= 120
+      bpSystolic >= 80 &&
+      bpSystolic <= 200 &&
+      bpDiastolic >= 50 &&
+      bpDiastolic <= 120
     );
-  };
+  }, [numericValues]);
 
-  const isBSValid = (): boolean => {
-    return bsLevelNum >= 50 && bsLevelNum <= 500;
-  };
+  const isBSValid = useCallback((): boolean => {
+    const { bsLevel } = numericValues;
+    return bsLevel >= 50 && bsLevel <= 500;
+  }, [numericValues]);
 
   // Fetch Last Readings from localStorage on Component Mount
   useEffect(() => {
-    const lastBP = localStorage.getItem('lastBloodPressure');
-    if (lastBP) {
-      try {
-        const parsedBP: BloodPressureData = JSON.parse(lastBP);
-        setBpSystolic(parsedBP.systolic.toString());
-        setBpDiastolic(parsedBP.diastolic.toString());
-        setBpPulse(parsedBP.pulse.toString());
-        setBpSystolicNum(parsedBP.systolic);
-        setBpDiastolicNum(parsedBP.diastolic);
-        setBpPulseNum(parsedBP.pulse);
-      } catch (error) {
-        console.error(
-          'Error parsing lastBloodPressure from localStorage:',
-          error
-        );
+    const fetchLastReadings = () => {
+      const lastBP = localStorage.getItem('lastBloodPressure');
+      if (lastBP) {
+        try {
+          const parsedBP: BloodPressureData = JSON.parse(lastBP);
+          setBloodPressure({
+            systolic: parsedBP.systolic.toString(),
+            diastolic: parsedBP.diastolic.toString(),
+            pulse: parsedBP.pulse.toString(),
+          });
+          setNumericValues((prev) => ({
+            ...prev,
+            bpSystolic: parsedBP.systolic,
+            bpDiastolic: parsedBP.diastolic,
+            bpPulse: parsedBP.pulse,
+          }));
+        } catch (error) {
+          console.error(
+            'Error parsing lastBloodPressure from localStorage:',
+            error
+          );
+        }
       }
-    }
 
-    const lastBS = localStorage.getItem('lastBloodSugar');
-    if (lastBS) {
-      try {
-        const parsedBS: BloodSugarData = JSON.parse(lastBS);
-        setBsLevel(parsedBS.level.toString());
-        setBsLevelNum(parsedBS.level);
-      } catch (error) {
-        console.error('Error parsing lastBloodSugar from localStorage:', error);
+      const lastBS = localStorage.getItem('lastBloodSugar');
+      if (lastBS) {
+        try {
+          const parsedBS: BloodSugarData = JSON.parse(lastBS);
+          setBloodSugar({
+            level: parsedBS.level.toString(),
+          });
+          setNumericValues((prev) => ({
+            ...prev,
+            bsLevel: parsedBS.level,
+          }));
+        } catch (error) {
+          console.error(
+            'Error parsing lastBloodSugar from localStorage:',
+            error
+          );
+        }
       }
-    }
+    };
+
+    fetchLastReadings();
   }, []);
 
   // Evaluate BP Status
   useEffect(() => {
-    if (bpSystolic && bpDiastolic) {
+    if (bloodPressure.systolic && bloodPressure.diastolic) {
       if (isBPValid()) {
-        const statusInfo = evaluateBPStatus(bpSystolicNum, bpDiastolicNum);
+        const statusInfo = evaluateBPStatus(
+          numericValues.bpSystolic,
+          numericValues.bpDiastolic
+        );
         setBpStatusInfo(statusInfo);
-        setBpValidationError('');
+        setErrors((prev) => ({ ...prev, bp: '' }));
       } else {
         setBpStatusInfo(null);
-        setBpValidationError('Vui lòng nhập các chỉ số huyết áp hợp lệ.');
+        setErrors((prev) => ({
+          ...prev,
+          bp: 'Vui lòng nhập các chỉ số huyết áp hợp lệ.',
+        }));
       }
     } else {
       setBpStatusInfo(null);
-      setBpValidationError('');
+      setErrors((prev) => ({ ...prev, bp: '' }));
     }
-  }, [bpSystolicNum, bpDiastolicNum]);
+  }, [
+    bloodPressure.systolic,
+    bloodPressure.diastolic,
+    isBPValid,
+    numericValues.bpSystolic,
+    numericValues.bpDiastolic,
+  ]);
+
   // Handle Input Changes
-  const handleSystolicInputChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    newValue: string | null
-  ) => {
-    const value = newValue || '';
-    setBpSystolic(value);
-    const num = parseInt(value, 10);
-    if (!isNaN(num)) {
-      setBpSystolicNum(num);
-    } else {
-      setBpSystolicNum(0);
-    }
-  };
+  const handleBPChange = useCallback(
+    (field: keyof typeof bloodPressure) =>
+      (
+        _event: React.SyntheticEvent<Element, Event>,
+        newValue: string | null
+      ) => {
+        const value = newValue || '';
+        setBloodPressure((prev) => ({ ...prev, [field]: value }));
+        const num = parseInt(value, 10);
+        setNumericValues((prev) => ({
+          ...prev,
+          [`bp${field.charAt(0).toUpperCase() + field.slice(1)}`]: isNaN(num)
+            ? 0
+            : num,
+        }));
+      },
+    []
+  );
 
-  const handleDiastolicInputChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    newValue: string | null
-  ) => {
-    const value = newValue || '';
-    setBpDiastolic(value);
-    const num = parseInt(value, 10);
-    if (!isNaN(num)) {
-      setBpDiastolicNum(num);
-    } else {
-      setBpDiastolicNum(0);
-    }
-  };
-
-  const handlePulseInputChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    newValue: string | null
-  ) => {
-    const value = newValue || '';
-    setBpPulse(value);
-    const num = parseInt(value, 10);
-    if (!isNaN(num)) {
-      setBpPulseNum(num);
-    } else {
-      setBpPulseNum(0);
-    }
-  };
-
-  const handleBsLevelInputChange = (
-    _event: React.SyntheticEvent<Element, Event>,
-    newValue: string | null
-  ) => {
-    const value = newValue || '';
-    setBsLevel(value);
-    const num = parseFloat(value);
-    if (!isNaN(num)) {
-      setBsLevelNum(num);
-    } else {
-      setBsLevelNum(0);
-    }
-  };
+  const handleBSChange = useCallback(
+    (_event: React.SyntheticEvent<Element, Event>, newValue: string | null) => {
+      const value = newValue || '';
+      setBloodSugar({ level: value });
+      const num = parseFloat(value);
+      setNumericValues((prev) => ({
+        ...prev,
+        bsLevel: isNaN(num) ? 0 : num,
+      }));
+    },
+    []
+  );
 
   // Submit BP Form
   const handleBPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isBPValid()) {
-      setBpValidationError('Vui lòng nhập các chỉ số huyết áp hợp lệ.');
-      setBpSuccessMessage('');
+      setErrors((prev) => ({
+        ...prev,
+        bp: 'Vui lòng nhập các chỉ số huyết áp hợp lệ.',
+      }));
+      setSuccessMessages((prev) => ({ ...prev, bp: '' }));
       return;
     }
 
-    const pulse = bpPulseNum;
-
     const bpData: BloodPressureData = {
-      systolic: bpSystolicNum,
-      diastolic: bpDiastolicNum,
-      pulse,
+      systolic: numericValues.bpSystolic,
+      diastolic: numericValues.bpDiastolic,
+      pulse: numericValues.bpPulse,
       time: new Date().toISOString(),
     };
 
     try {
       await addReading('bloodPressure', bpData);
-      // Update BP fields with the submitted values
-      setBpValidationError('');
-      setBpSuccessMessage('Gửi thành công');
+      setErrors((prev) => ({ ...prev, bp: '' }));
+      setSuccessMessages((prev) => ({ ...prev, bp: 'Gửi thành công' }));
       // Persist to localStorage
       localStorage.setItem('lastBloodPressure', JSON.stringify(bpData));
     } catch (err) {
-      // Handle backend errors
-      setBpValidationError('Gửi không thành công.');
-      setBpSuccessMessage('');
+      setErrors((prev) => ({ ...prev, bp: 'Gửi không thành công.' }));
+      setSuccessMessages((prev) => ({ ...prev, bp: '' }));
     }
   };
 
@@ -260,29 +363,28 @@ const RecordForm: React.FC = () => {
   const handleBSSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isBSValid()) {
-      setBsValidationError('Vui lòng nhập chỉ số đường huyết hợp lệ.');
-      setBsSuccessMessage('');
+      setErrors((prev) => ({
+        ...prev,
+        bs: 'Vui lòng nhập chỉ số đường huyết hợp lệ.',
+      }));
+      setSuccessMessages((prev) => ({ ...prev, bs: '' }));
       return;
     }
 
-    const level = bsLevelNum;
-
     const bsData: BloodSugarData = {
-      level,
+      level: numericValues.bsLevel,
       time: new Date().toISOString(),
     };
 
     try {
       await addReading('bloodSugar', bsData);
-      // Update BS fields with the submitted value
-      setBsValidationError('');
-      setBsSuccessMessage('Gửi thành công.');
+      setErrors((prev) => ({ ...prev, bs: '' }));
+      setSuccessMessages((prev) => ({ ...prev, bs: 'Gửi thành công.' }));
       // Persist to localStorage
       localStorage.setItem('lastBloodSugar', JSON.stringify(bsData));
     } catch (err) {
-      // Handle backend errors
-      setBsValidationError('Gửi không thành công.');
-      setBsSuccessMessage('');
+      setErrors((prev) => ({ ...prev, bs: 'Gửi không thành công.' }));
+      setSuccessMessages((prev) => ({ ...prev, bs: '' }));
     }
   };
 
@@ -317,13 +419,13 @@ const RecordForm: React.FC = () => {
       <TabPanel value={tabValue} index={0}>
         {/* BloodPressureGauge */}
         <BloodPressureGauge
-          systolic={bpSystolicNum}
-          diastolic={bpDiastolicNum}
+          systolic={numericValues.bpSystolic}
+          diastolic={numericValues.bpDiastolic}
         />
         {/* End of BloodPressureGauge */}
 
         <form onSubmit={handleBPSubmit}>
-          {/* Systolic Blood Pressure with Autocomplete */}
+          {/* Systolic, Diastolic, Pulse Inputs */}
           <Box
             sx={{
               gap: isMobile ? 0.5 : 1.5,
@@ -331,156 +433,49 @@ const RecordForm: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               mt: 2,
+              flexWrap: 'wrap',
             }}
           >
-            <Autocomplete
-              freeSolo
-              options={systolicOptions.map((option) => option.toString())}
-              value={bpSystolic}
-              disableClearable
-              onInputChange={handleSystolicInputChange}
-              renderInput={(params) => (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    width: 75,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 0.3,
-                    }}
-                  >
-                    <Typography
-                      variant='body1'
-                      component='label'
-                      htmlFor={params.id}
-                    >
-                      T.Thu
-                    </Typography>
-                    <Typography variant='caption'>mm Hg</Typography>
-                  </Box>
-                  <TextField
-                    {...params}
-                    variant='outlined'
-                    required
-                    type='number'
-                    inputProps={{
-                      ...params.inputProps,
-                      min: 80,
-                      max: 200,
-                      style: { textAlign: 'center' },
-                      'aria-label': 'Systolic Blood Pressure in mm Hg',
-                    }}
-                    error={bpValidationError !== '' && !isBPValid()}
-                    aria-invalid={bpValidationError !== '' && !isBPValid()}
-                  />
-                </Box>
-              )}
+            <NumberAutocomplete
+              label='T.Thu'
+              unit='mm Hg'
+              value={bloodPressure.systolic}
+              options={systolicOptions}
+              onChange={handleBPChange('systolic')}
+              min={80}
+              max={200}
+              error={!!errors.bp && !isBPValid()}
+              aria-label='Systolic Blood Pressure in mm Hg'
+              width={75}
             />
 
-            <Autocomplete
-              freeSolo
-              options={diastolicOptions.map((option) => option.toString())}
-              value={bpDiastolic}
-              disableClearable
-              onInputChange={handleDiastolicInputChange}
-              renderInput={(params) => (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    width: 75,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 0.3,
-                    }}
-                  >
-                    <Typography
-                      variant='body1'
-                      component='label'
-                      htmlFor={params.id}
-                    >
-                      T.Trương
-                    </Typography>
-                    <Typography variant='caption'>mm Hg</Typography>
-                  </Box>
-                  <TextField
-                    {...params}
-                    variant='outlined'
-                    required
-                    type='number'
-                    inputProps={{
-                      ...params.inputProps,
-                      min: 50,
-                      max: 120,
-                      style: { textAlign: 'center' },
-                      'aria-label': 'Diastolic Blood Pressure in mm Hg',
-                    }}
-                    error={bpValidationError !== '' && !isBPValid()}
-                    aria-invalid={bpValidationError !== '' && !isBPValid()}
-                  />
-                </Box>
-              )}
+            <NumberAutocomplete
+              label='T.Trương'
+              unit='mm Hg'
+              value={bloodPressure.diastolic}
+              options={diastolicOptions}
+              onChange={handleBPChange('diastolic')}
+              min={50}
+              max={120}
+              error={!!errors.bp && !isBPValid()}
+              aria-label='Diastolic Blood Pressure in mm Hg'
+              width={75}
             />
 
-            <Autocomplete
-              freeSolo
-              options={pulseOptions.map((option) => option.toString())}
-              value={bpPulse}
-              disableClearable
-              onInputChange={handlePulseInputChange}
-              renderInput={(params) => (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    width: 75,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 0.3,
-                    }}
-                  >
-                    <Typography
-                      variant='body1'
-                      component='label'
-                      htmlFor={params.id}
-                    >
-                      Nhịp
-                    </Typography>
-                    <Typography variant='caption'>bpm</Typography>
-                  </Box>
-                  <TextField
-                    {...params}
-                    variant='outlined'
-                    type='number'
-                    inputProps={{
-                      ...params.inputProps,
-                      min: 40,
-                      max: 180,
-                      style: { textAlign: 'center' },
-                      'aria-label': 'Pulse in bpm',
-                    }}
-                    error={
-                      bpPulse !== '' && (bpPulseNum < 40 || bpPulseNum > 180)
-                    }
-                    aria-invalid={
-                      bpPulse !== '' && (bpPulseNum < 40 || bpPulseNum > 180)
-                    }
-                  />
-                </Box>
-              )}
+            <NumberAutocomplete
+              label='Nhịp'
+              unit='bpm'
+              value={bloodPressure.pulse}
+              options={pulseOptions}
+              onChange={handleBPChange('pulse')}
+              min={40}
+              max={180}
+              error={
+                !!errors.bpPulse &&
+                (numericValues.bpPulse < 40 || numericValues.bpPulse > 180)
+              }
+              aria-label='Pulse in bpm'
+              width={75}
             />
           </Box>
 
@@ -500,28 +495,22 @@ const RecordForm: React.FC = () => {
           >
             {loading ? 'Đang gửi...' : 'THÊM'}
           </Button>
-          <Box sx={{ minHeight: '65px', mt: 2 }}>
-            {/* Success Message */}
-            {bpSuccessMessage && (
-              <Alert severity='success'>{bpSuccessMessage}</Alert>
-            )}
 
-            {/* Validation Error */}
-            {bpValidationError && (
-              <Alert severity='error'>{bpValidationError}</Alert>
-            )}
-          </Box>
+          <FormAlert
+            successMessage={successMessages.bp}
+            errorMessage={errors.bp}
+          />
         </form>
       </TabPanel>
 
       {/* Blood Sugar Form */}
       <TabPanel value={tabValue} index={1}>
         {/* BloodSugarGauge */}
-        <BloodSugarGauge level={bsLevelNum} />
+        <BloodSugarGauge level={numericValues.bsLevel} />
         {/* End of BloodSugarGauge */}
 
         <form onSubmit={handleBSSubmit}>
-          {/* Blood Sugar Level with Autocomplete */}
+          {/* Blood Sugar Level Input */}
           <Box
             sx={{
               gap: isMobile ? 0.5 : 1.5,
@@ -529,56 +518,20 @@ const RecordForm: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               mt: 2,
+              flexWrap: 'wrap',
             }}
           >
-            <Autocomplete
-              freeSolo
-              options={bloodSugarOptions.map((option) => option.toString())}
-              value={bsLevel}
-              disableClearable
-              onInputChange={handleBsLevelInputChange}
-              renderInput={(params) => (
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    width: 85,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 0.3,
-                    }}
-                  >
-                    <Typography
-                      variant='body1'
-                      component='label'
-                      htmlFor={params.id}
-                    >
-                      Đ.Huyết
-                    </Typography>
-                    <Typography variant='caption'>mg/dL</Typography>
-                  </Box>
-                  <TextField
-                    {...params}
-                    variant='outlined'
-                    required
-                    type='number'
-                    placeholder='VD: 90'
-                    inputProps={{
-                      ...params.inputProps,
-                      min: 50,
-                      max: 500,
-                      style: { textAlign: 'center' },
-                      'aria-label': 'Blood Sugar Level in mg/dL',
-                    }}
-                    error={bsValidationError !== '' && !isBSValid()}
-                    aria-invalid={bsValidationError !== '' && !isBSValid()}
-                  />
-                </Box>
-              )}
+            <NumberAutocomplete
+              label='Đ.Huyết'
+              unit='mg/dL'
+              value={bloodSugar.level}
+              options={bloodSugarOptions}
+              onChange={handleBSChange}
+              min={50}
+              max={500}
+              error={!!errors.bs && !isBSValid()}
+              aria-label='Blood Sugar Level in mg/dL'
+              width={85}
             />
           </Box>
 
@@ -598,17 +551,11 @@ const RecordForm: React.FC = () => {
           >
             {loading ? 'Đang gửi...' : 'THÊM'}
           </Button>
-          {/* Success Message */}
-          <Box sx={{ minHeight: '65px', mt: 2 }}>
-            {bsSuccessMessage && (
-              <Alert severity='success'>{bsSuccessMessage}</Alert>
-            )}
 
-            {/* Validation Error */}
-            {bsValidationError && (
-              <Alert severity='error'>{bsValidationError}</Alert>
-            )}
-          </Box>
+          <FormAlert
+            successMessage={successMessages.bs}
+            errorMessage={errors.bs}
+          />
         </form>
       </TabPanel>
     </Box>
