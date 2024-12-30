@@ -18,7 +18,6 @@ import useUserData from '../hooks/useUserData';
 import { evaluateBPStatus, StatusInfo } from '../utils/evaluateBPStatus';
 import BloodPressureGauge from './BloodPressureGauge';
 import BloodSugarGauge from './BloodSugarGauge';
-
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
