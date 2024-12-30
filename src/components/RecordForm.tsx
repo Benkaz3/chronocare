@@ -17,7 +17,7 @@ import { BloodPressureData, BloodSugarData } from '../firebase';
 import useUserData from '../hooks/useUserData';
 import { evaluateBPStatus, StatusInfo } from '../utils/evaluateBPStatus';
 import BloodPressureGauge from './BloodPressureGauge';
-import BloodSugarGauge from './BloodSugarGauge';
+import Bsgauge from './Bsgauge';
 
 // Interface for TabPanel Props
 interface TabPanelProps {
@@ -505,9 +505,9 @@ const RecordForm: React.FC = () => {
 
       {/* Blood Sugar Form */}
       <TabPanel value={tabValue} index={1}>
-        {/* BloodSugarGauge */}
-        <BloodSugarGauge level={numericValues.bsLevel} />
-        {/* End of BloodSugarGauge */}
+        {/* bsgauge */}
+        <Bsgauge level={numericValues.bsLevel} />
+        {/* End of bsgauge */}
 
         <form onSubmit={handleBSSubmit}>
           {/* Blood Sugar Level Input */}

@@ -9,7 +9,7 @@ import {
   BloodSugarCategory,
 } from '../constants/bloodSugarCategories';
 
-interface BloodSugarGaugeProps {
+interface BsgaugeProps {
   level: number;
 }
 
@@ -20,7 +20,7 @@ interface StatusInfo {
   color: string;
 }
 
-const BloodSugarGauge: React.FC<BloodSugarGaugeProps> = ({ level }) => {
+const Bsgauge: React.FC<BsgaugeProps> = ({ level }) => {
   const [gaugeValue, setGaugeValue] = useState<number>(0);
   const [statusInfo, setStatusInfo] = useState<StatusInfo | null>(null);
 
@@ -171,4 +171,4 @@ const BloodSugarGauge: React.FC<BloodSugarGaugeProps> = ({ level }) => {
   );
 };
 
-export default BloodSugarGauge;
+export default Bsgauge;
