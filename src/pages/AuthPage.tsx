@@ -103,7 +103,7 @@ const AuthPage: React.FC = () => {
               textAlign: 'left',
             }}
           >
-            Đăng nhập hoả tốc với
+            Đăng nhập nhanh với
           </Typography>
           <AuthProviderButtons
             onSignIn={signInWithProvider}
