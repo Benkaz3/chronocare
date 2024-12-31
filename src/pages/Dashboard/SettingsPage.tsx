@@ -180,7 +180,7 @@ const SettingsPage: React.FC = () => {
           }}
           onClick={handleLogout}
         >
-          Log Out
+          Đăng Xuất
         </Button>
       </Box>
 
