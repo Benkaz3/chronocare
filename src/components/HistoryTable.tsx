@@ -17,20 +17,17 @@ import {
   Select,
   MenuItem,
   IconButton,
-  Dialog,
-  DialogTitle,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import useUserData from '../hooks/useUserData';
+import CalendarModal from './CalendarModal';
 
-// **1. Props Interface for HistoryTable**
 interface HistoryTableProps {
   type: 'bloodPressure' | 'bloodSugar';
   title: string;
 }
 
-// **2. Reading Interfaces**
 interface BloodPressureReading {
   id: string;
   value: {
@@ -49,7 +46,6 @@ interface BloodSugarReading {
   date: string;
 }
 
-// **3. Processed Reading Interfaces**
 interface ProcessedBP extends BloodPressureReading {
   systolic: number;
   diastolic: number;
@@ -62,12 +58,10 @@ interface ProcessedBS extends BloodSugarReading {
   status: string;
 }
 
-// **4. Type Guards**
 const isProcessedBP = (row: ProcessedBP | ProcessedBS): row is ProcessedBP => {
   return 'systolic' in row;
 };
 
-// **5. Status Determination Functions**
 const getBPStatus = (
   systolic: number,
   diastolic: number
@@ -100,7 +94,6 @@ const getBSStatus = (level: number): { status: string; color: string } => {
   }
 };
 
-// **6. Styled Components for Status Circles**
 interface StyledAvatarProps {
   bgcolor: string;
 }
@@ -130,7 +123,6 @@ const BSCircle = styled(Avatar, {
   fontSize: '0.8rem',
 }));
 
-// **7. Row Rendering Functions**
 const renderBloodPressureRow = (
   row: ProcessedBP,
   formatDateTime: (isoString: string) => { date: string; time: string }
@@ -193,18 +185,15 @@ const renderBloodSugarRow = (
   );
 };
 
-// **8. HistoryTable Component**
 const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
   const { readings, loading, error } = useUserData();
 
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [statusFilter, setStatusFilter] = useState<string>('Tất cả');
-
-  // **State for Calendar Modal**
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [openCalendar, setOpenCalendar] = useState<boolean>(false);
 
-  // **Handle Modal Open/Close**
   const handleOpenCalendar = () => {
     setOpenCalendar(true);
   };
@@ -213,7 +202,11 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     setOpenCalendar(false);
   };
 
-  // **Determine status options based on type**
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setPage(0);
+  };
+
   const statusOptions = useMemo(() => {
     if (type === 'bloodPressure') {
       return [
@@ -230,7 +223,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     return ['Tất cả'];
   }, [type]);
 
-  // **Processing Data with Status**
   const dataWithStatus = useMemo(() => {
     if (type === 'bloodPressure') {
       return (
@@ -267,13 +259,36 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     return [];
   }, [readings, type]);
 
-  // **Filter Data Based on Status Filter**
-  const filteredData = useMemo(() => {
-    if (statusFilter === 'Tất cả') return dataWithStatus;
+  const filteredByStatus = useMemo(() => {
+    if (statusFilter === 'Tất cả') {
+      return dataWithStatus;
+    }
     return dataWithStatus.filter((row) => row.status === statusFilter);
   }, [dataWithStatus, statusFilter]);
 
-  // **Paginate the Filtered Data**
+  const filteredByDate = useMemo(() => {
+    if (!selectedDate) {
+      return filteredByStatus;
+    }
+    const selectedDateString = selectedDate.toDateString();
+    return filteredByStatus.filter((row) => {
+      const rowDate = new Date(row.date).toDateString();
+      return rowDate === selectedDateString;
+    });
+  }, [filteredByStatus, selectedDate]);
+
+  const filteredData = useMemo(() => {
+    // Use type guards to ensure data is of a single type
+    if (type === 'bloodPressure') {
+      return filteredByDate.filter(isProcessedBP) as ProcessedBP[];
+    } else if (type === 'bloodSugar') {
+      return filteredByDate.filter(
+        (row): row is ProcessedBS => !isProcessedBP(row)
+      );
+    }
+    return [];
+  }, [filteredByDate, type]);
+
   const paginatedData = useMemo(() => {
     return filteredData.slice(
       page * rowsPerPage,
@@ -281,7 +296,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     );
   }, [filteredData, page, rowsPerPage]);
 
-  // **Handle Pagination Events**
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
     setPage(newPage);
   }, []);
@@ -294,7 +308,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     []
   );
 
-  // **Format Date and Time**
   const formatDateTime = (
     isoString: string
   ): { date: string; time: string } => {
@@ -310,13 +323,16 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     return { date: formattedDate, time: formattedTime };
   };
 
+  const markedDates = useMemo(() => {
+    return dataWithStatus.map((row) => new Date(row.date));
+  }, [dataWithStatus]);
+
   return (
     <Box>
       <Typography variant='h6' gutterBottom>
         {title}
       </Typography>
 
-      {/* **Status Filter UI with Calendar Icon** */}
       <Box mb={2} display='flex' alignItems='center' gap={2}>
         <FormControl variant='outlined' size='small'>
           <InputLabel id='status-filter-label'>Trạng thái</InputLabel>
@@ -358,11 +374,17 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
         </Box>
       ) : error ? (
         <Alert severity='error'>{error}</Alert>
-      ) : filteredData.length === 0 ? (
+      ) : filteredByStatus.length === 0 ? (
         <Typography>
           Không có dữ liệu{' '}
           {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'} với trạng thái
           "{statusFilter}".
+        </Typography>
+      ) : filteredByDate.length === 0 ? (
+        <Typography>
+          Không có dữ liệu{' '}
+          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'} cho ngày đã
+          chọn.
         </Typography>
       ) : (
         <Paper>
@@ -389,7 +411,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage='Số hàng mỗi trang'
+            labelRowsPerPage=''
             labelDisplayedRows={({ from, to, count }) =>
               `${from}-${to} trong ${count !== -1 ? count : `nhiều hơn ${to}`}`
             }
@@ -397,18 +419,12 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
         </Paper>
       )}
 
-      {/* **Calendar Modal Placeholder** */}
-      <Dialog
+      <CalendarModal
         open={openCalendar}
         onClose={handleCloseCalendar}
-        fullWidth
-        maxWidth='sm'
-      >
-        <DialogTitle>Chọn Ngày</DialogTitle>
-        <Box p={2}>
-          <Typography>Opps, không có gì! Liu liu! 👻</Typography>
-        </Box>
-      </Dialog>
+        onDateSelect={handleDateSelect}
+        markedDates={markedDates}
+      />
     </Box>
   );
 };

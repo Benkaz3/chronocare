@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Container, Box, Paper } from '@mui/material';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Container,
-  Box,
-  Paper,
-} from '@mui/material';
-import {
-  Logout as LogoutIcon,
   History as HistoryIcon,
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
@@ -17,11 +8,11 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { BottomNavigation, BottomNavigationAction } from '@mui/material';
-import useAuth from '../hooks/useAuth';
+// import useAuth from '../hooks/useAuth';
 import useUserData from '../hooks/useUserData';
 
 const Dashboard: React.FC = () => {
-  const { signOut } = useAuth();
+  // const { signOut } = useAuth();
   useUserData();
 
   const navigate = useNavigate();
@@ -44,9 +35,9 @@ const Dashboard: React.FC = () => {
     setValue(currentNav !== -1 ? currentNav : 0);
   }, [currentNav]);
 
-  const handleLogout = async () => {
-    await signOut();
-  };
+  // const handleLogout = async () => {
+  //   await signOut();
+  // };
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -56,7 +47,7 @@ const Dashboard: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Header */}
-      <AppBar position='static'>
+      {/* <AppBar position='static'>
         <Toolbar>
           <Typography variant='h1' sx={{ flexGrow: 1, fontFamily: 'Playfair' }}>
             ChronoCare
@@ -69,7 +60,7 @@ const Dashboard: React.FC = () => {
             <LogoutIcon />
           </IconButton>
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
 
       {/* Main Content */}
       <Box sx={{ flex: 1, padding: 2 }}>

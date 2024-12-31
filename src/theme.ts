@@ -2,42 +2,32 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
-    mode: 'light',
     primary: {
-      main: '#1976d2', // Default primary color for light theme
+      light: '#a5d6a7', // Light green
+      main: '#66bb6a', // Main green color
+      dark: '#388e3c', // Dark green
+      contrastText: '#fff',
     },
     secondary: {
-      main: '#dc004e', // Secondary color for accents
-    },
-    success: {
-      main: '#4caf50', // For success states
-    },
-    warning: {
-      main: '#ff9800', // For warning states
-    },
-    error: {
-      main: '#f44336', // For error states
+      light: '#c8e6c9', // Light secondary green
+      main: '#81c784', // Secondary green
+      dark: '#388e3c', // Dark secondary green
+      contrastText: '#fff',
     },
     info: {
-      main: '#2196f3', // For informational messages
-    },
-    background: {
-      default: '#f5f5f5', // Light background
-      paper: '#ffffff', // Light paper background
+      light: '#b9f6ca', // Light info green
+      main: '#69f0ae', // Info green
+      dark: '#00e676', // Dark info green
+      contrastText: '#000',
     },
     text: {
-      primary: '#000000', // Dark text for light theme
-      secondary: 'rgba(0, 0, 0, 0.7)',
+      primary: '#1b5e20', // Dark green for primary text
+      secondary: '#4caf50', // Green for secondary text
+      disabled: '#c8e6c9', // Light green for disabled text
     },
-    chart: {
-      bloodPressure: {
-        systolic: '#ff5722', // Color for systolic charts
-        diastolic: '#03a9f4', // Color for diastolic charts
-      },
-      bloodSugar: {
-        fasting: '#8bc34a', // Color for fasting blood sugar
-        postPrandial: '#ffeb3b', // Color for post-prandial blood sugar
-      },
+    action: {
+      hover: '#e8f5e9', // Light green for hover actions
+      disabledBackground: '#e0f2f1', // Light green for disabled backgrounds
     },
   },
   typography: {
@@ -109,46 +99,46 @@ const theme = createTheme({
       fontWeight: 700,
     },
   },
-  spacing: 8, // Default spacing unit (can be used as spacing(2) => 16px)
+  spacing: 8,
   components: {
     MuiButton: {
       styleOverrides: {
         contained: {
-          backgroundColor: '#1976d2',
+          backgroundColor: '#66bb6a', // Use primary main green
           color: '#ffffff',
           textTransform: 'none',
           padding: '10px 0',
           '&:hover': {
-            backgroundColor: '#1565c0',
+            backgroundColor: '#388e3c', // Use primary dark green
           },
           '&:focus-visible': {
-            outline: '2px solid #1976d2',
+            outline: '2px solid #66bb6a',
             outlineOffset: '2px',
           },
         },
         outlined: {
           backgroundColor: '#ffffff',
-          color: '#1976d2',
+          color: '#66bb6a', // Use primary main green
           textTransform: 'none',
           padding: '10px 0',
-          border: '1px solid rgba(25, 118, 210, 0.7)',
+          border: '1px solid rgba(102, 187, 106, 0.7)',
           '&:hover': {
-            backgroundColor: 'rgba(25, 118, 210, 0.04)',
-            borderColor: 'rgba(25, 118, 210, 0.9)',
+            backgroundColor: 'rgba(102, 187, 106, 0.04)',
+            borderColor: 'rgba(102, 187, 106, 0.9)',
           },
           '&:focus-visible': {
-            outline: '2px solid #1976d2',
+            outline: '2px solid #66bb6a',
             outlineOffset: '2px',
           },
         },
         text: {
-          color: '#1976d2',
+          color: '#66bb6a', // Use primary main green
           textTransform: 'none',
           '&:hover': {
-            backgroundColor: 'rgba(25, 118, 210, 0.04)',
+            backgroundColor: 'rgba(102, 187, 106, 0.04)',
           },
           '&:focus-visible': {
-            outline: '2px solid #1976d2',
+            outline: '2px solid #66bb6a',
             outlineOffset: '2px',
           },
         },
@@ -158,7 +148,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:focus-visible': {
-            outline: '2px solid #1976d2',
+            outline: '2px solid #66bb6a',
             outlineOffset: '2px',
           },
         },
@@ -167,11 +157,11 @@ const theme = createTheme({
     MuiLink: {
       styleOverrides: {
         root: {
-          color: '#1976d2',
+          color: '#66bb6a', // Use primary main green
           textDecoration: 'underline',
           fontSize: '0.725rem',
           '&:focus-visible': {
-            outline: '2px solid #1976d2',
+            outline: '2px solid #66bb6a',
             outlineOffset: '2px',
           },
         },
@@ -200,7 +190,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:focus-visible': {
-            outline: '2px solid #1976d2',
+            outline: '2px solid #66bb6a',
             outlineOffset: '2px',
           },
         },
@@ -234,7 +224,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {},
         indicator: {
-          backgroundColor: '#1976d2',
+          backgroundColor: '#66bb6a', // Use primary main green
         },
       },
     },
@@ -242,7 +232,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&.Mui-selected': {
-            color: '#1976d2',
+            color: '#66bb6a', // Use primary main green
           },
         },
       },
@@ -333,10 +323,9 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 8, // Default border radius for components
+    borderRadius: 8,
   },
   transitions: {
-    // Customize transition durations and easing if needed
     duration: {
       shortest: 150,
       shorter: 200,
