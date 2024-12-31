@@ -17,11 +17,15 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Button,
+  Tooltip,
+  Grid,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import useUserData from '../hooks/useUserData';
 import CalendarModal from './CalendarModal';
+import RestoreIcon from '@mui/icons-material/Restore';
 
 interface HistoryTableProps {
   type: 'bloodPressure' | 'bloodSugar';
@@ -207,6 +211,12 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     setPage(0);
   };
 
+  const handleResetFilters = () => {
+    setStatusFilter('Tất cả');
+    setSelectedDate(null);
+    setPage(0);
+  };
+
   const statusOptions = useMemo(() => {
     if (type === 'bloodPressure') {
       return [
@@ -328,41 +338,89 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
   }, [dataWithStatus]);
 
   return (
-    <Box>
+    <Box p={2}>
+      {/* Title */}
       <Typography variant='h6' gutterBottom>
         {title}
       </Typography>
 
-      <Box mb={2} display='flex' alignItems='center' gap={2}>
-        <FormControl variant='outlined' size='small'>
-          <InputLabel id='status-filter-label'>Trạng thái</InputLabel>
-          <Select
-            labelId='status-filter-label'
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as string);
-              setPage(0);
-            }}
-            label='Trạng thái'
-            style={{ minWidth: 200 }}
-          >
-            {statusOptions.map((status) => (
-              <MenuItem key={status} value={status}>
-                {status}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      {/* Filters */}
+      <Box mb={3}>
+        <Grid container spacing={2} alignItems='center'>
+          {/* Status Filter */}
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControl
+              variant='outlined'
+              size='small'
+              fullWidth
+              sx={{
+                minWidth: 200,
+              }}
+            >
+              <InputLabel id='status-filter-label'>Trạng thái</InputLabel>
+              <Select
+                labelId='status-filter-label'
+                id='status-filter'
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(0);
+                }}
+                label='Trạng thái'
+              >
+                {statusOptions.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-        <IconButton
-          color='primary'
-          onClick={handleOpenCalendar}
-          aria-label='Open Calendar'
-        >
-          <CalendarTodayIcon />
-        </IconButton>
+          {/* Calendar Button */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Tooltip title='Chọn ngày'>
+              <IconButton
+                color='primary'
+                onClick={handleOpenCalendar}
+                aria-label='Open Calendar'
+                size='large'
+                sx={{
+                  border: `1px solid #81c784`,
+                  borderRadius: 1,
+                  padding: '8px',
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                }}
+              >
+                <CalendarTodayIcon sx={{ marginRight: 1 }} />
+                <Typography variant='body2'>Chọn ngày</Typography>
+              </IconButton>
+            </Tooltip>
+          </Grid>
+
+          {/* Reset Filters Button */}
+          <Grid item xs={12} sm={12} md={2}>
+            <Tooltip title='Bỏ lọc'>
+              <Button
+                variant='outlined'
+                color='secondary'
+                onClick={handleResetFilters}
+                startIcon={<RestoreIcon />}
+                fullWidth
+                disabled={!statusFilter} // Disable when no filter is applied
+                sx={{
+                  height: '100%',
+                }}
+              >
+                Bỏ lọc
+              </Button>
+            </Tooltip>
+          </Grid>
+        </Grid>
       </Box>
 
+      {/* Content */}
       {loading ? (
         <Box
           display='flex'
@@ -383,8 +441,8 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
       ) : filteredByDate.length === 0 ? (
         <Typography>
           Không có dữ liệu{' '}
-          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'} cho ngày đã
-          chọn.
+          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'} với trạng thái
+          "{statusFilter}" cho ngày đã chọn.
         </Typography>
       ) : (
         <Paper>
@@ -419,6 +477,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
         </Paper>
       )}
 
+      {/* Calendar Modal */}
       <CalendarModal
         open={openCalendar}
         onClose={handleCloseCalendar}
