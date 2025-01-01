@@ -45,6 +45,12 @@ a {
   font-weight: 900; 
   font-style: normal;
 }
+@font-face {
+  font-family: 'BeVietnamPro';
+  src: url('./assets/fonts/BeVietnamPro-Medium.ttf') format('truetype');
+  font-weight: 900; 
+  font-style: normal;
+}
 
 /* hide central value */
 

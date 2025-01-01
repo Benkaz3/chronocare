@@ -37,6 +37,7 @@ const theme = createTheme({
       'Helvetica Neue',
       'Arial',
       'sans-serif',
+      'BeVietnamPro',
     ].join(','),
     h1: {
       fontWeight: 700,
