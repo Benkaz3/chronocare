@@ -1,3 +1,5 @@
+// src/components/HistoryTable.tsx
+
 import React, { useMemo, useState, useCallback } from 'react';
 import {
   Table,
@@ -23,10 +25,23 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import RestoreIcon from '@mui/icons-material/Restore';
 import useUserData from '../hooks/useUserData';
 import CalendarModal from './CalendarModal';
-import RestoreIcon from '@mui/icons-material/Restore';
 
+// Import centralized data and utility functions
+import {
+  getBloodPressureCategory,
+  getBloodPressureStatusInfo,
+  bloodPressureFilterableStatusLabels,
+} from '../data/bloodPressure';
+import {
+  getBloodSugarCategory,
+  getBloodSugarStatusInfo,
+  bloodSugarFilterableStatusLabels,
+} from '../data/bloodSugar';
+
+// Interfaces for readings (adjusted as per centralized data)
 interface HistoryTableProps {
   type: 'bloodPressure' | 'bloodSugar';
   title: string;
@@ -55,54 +70,26 @@ interface ProcessedBP extends BloodPressureReading {
   diastolic: number;
   pulse: number | null;
   status: string;
+  color: string; // Added color for consistency
 }
 
 interface ProcessedBS extends BloodSugarReading {
   level: number;
   status: string;
+  color: string; // Added color for consistency
 }
 
+// Type guard to differentiate between ProcessedBP and ProcessedBS
 const isProcessedBP = (row: ProcessedBP | ProcessedBS): row is ProcessedBP => {
   return 'systolic' in row;
 };
 
-const getBPStatus = (
-  systolic: number,
-  diastolic: number
-): { status: string; color: string } => {
-  if (systolic < 120 && diastolic < 80) {
-    return { status: 'Bình thường', color: '#4caf50' };
-  } else if (systolic >= 120 && systolic < 130 && diastolic < 80) {
-    return { status: 'Tăng nhẹ', color: '#e8cf51' };
-  } else if (
-    (systolic >= 130 && systolic < 140) ||
-    (diastolic >= 80 && diastolic < 90)
-  ) {
-    return { status: 'Tăng huyết áp giai đoạn 1', color: '#ffa322' };
-  } else if (systolic >= 140 || diastolic >= 90) {
-    return { status: 'Tăng huyết áp giai đoạn 2', color: '#f44336' };
-  } else {
-    return { status: 'Không xác định', color: '#9e9e9e' };
-  }
-};
-
-const getBSStatus = (level: number): { status: string; color: string } => {
-  if (level < 70) {
-    return { status: 'Thấp', color: '#2196f3' };
-  } else if (level >= 70 && level <= 140) {
-    return { status: 'Bình thường', color: '#4caf50' };
-  } else if (level > 140 && level <= 180) {
-    return { status: 'Cao', color: '#ff9800' };
-  } else {
-    return { status: 'Nguy kịch', color: '#f44336' };
-  }
-};
-
+// Styled Avatar for status indicators
 interface StyledAvatarProps {
   bgcolor: string;
 }
 
-const BPCircle = styled(Avatar, {
+const StatusCircle = styled(Avatar, {
   shouldForwardProp: (prop) => prop !== 'bgcolor',
 })<StyledAvatarProps>(({ bgcolor }) => ({
   backgroundColor: bgcolor,
@@ -115,29 +102,17 @@ const BPCircle = styled(Avatar, {
   fontSize: '0.8rem',
 }));
 
-const BSCircle = styled(Avatar, {
-  shouldForwardProp: (prop) => prop !== 'bgcolor',
-})<StyledAvatarProps>(({ bgcolor }) => ({
-  backgroundColor: bgcolor,
-  width: 60,
-  height: 60,
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  fontSize: '0.8rem',
-}));
-
+// Render functions using centralized status info
 const renderBloodPressureRow = (
   row: ProcessedBP,
   formatDateTime: (isoString: string) => { date: string; time: string }
 ) => {
-  const { status, color } = getBPStatus(row.systolic, row.diastolic);
   const { date, time } = formatDateTime(row.date);
 
   return (
     <>
       <TableCell align='center'>
-        <BPCircle bgcolor={color}>
+        <StatusCircle bgcolor={row.color}>
           <Typography variant='subtitle2'>{row.systolic}</Typography>
           <Box
             sx={{
@@ -148,11 +123,11 @@ const renderBloodPressureRow = (
             }}
           />
           <Typography variant='subtitle2'>{row.diastolic}</Typography>
-        </BPCircle>
+        </StatusCircle>
       </TableCell>
       <TableCell>
         <Typography variant='subtitle1' color='textPrimary'>
-          {status}
+          {row.status}
         </Typography>
         <Typography variant='body2' color='textSecondary'>
           {date} {time}
@@ -167,19 +142,18 @@ const renderBloodSugarRow = (
   row: ProcessedBS,
   formatDateTime: (isoString: string) => { date: string; time: string }
 ) => {
-  const { status, color } = getBSStatus(row.level);
   const { date, time } = formatDateTime(row.date);
 
   return (
     <>
       <TableCell align='center'>
-        <BSCircle bgcolor={color}>
+        <StatusCircle bgcolor={row.color}>
           <Typography variant='subtitle2'>{row.level}</Typography>
-        </BSCircle>
+        </StatusCircle>
       </TableCell>
       <TableCell>
         <Typography variant='subtitle1' color='textPrimary'>
-          {status}
+          {row.status}
         </Typography>
         <Typography variant='body2' color='textSecondary'>
           {date} {time}
@@ -217,53 +191,50 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     setPage(0);
   };
 
+  // Derive status options based on centralized data
   const statusOptions = useMemo(() => {
     if (type === 'bloodPressure') {
-      return [
-        'Tất cả',
-        'Bình thường',
-        'Tăng nhẹ',
-        'Tăng huyết áp giai đoạn 1',
-        'Tăng huyết áp giai đoạn 2',
-        'Không xác định',
-      ];
+      return ['Tất cả', ...bloodPressureFilterableStatusLabels];
     } else if (type === 'bloodSugar') {
-      return ['Tất cả', 'Thấp', 'Bình thường', 'Cao', 'Nguy kịch'];
+      return ['Tất cả', ...bloodSugarFilterableStatusLabels];
     }
     return ['Tất cả'];
   }, [type]);
 
+  // Processed data using centralized utility functions
   const dataWithStatus = useMemo(() => {
     if (type === 'bloodPressure') {
       return (
-        (readings.bloodPressure?.map((reading: BloodPressureReading) => {
-          const baseProcessed: Omit<ProcessedBP, 'status'> = {
+        readings.bloodPressure?.map((reading: BloodPressureReading) => {
+          const category = getBloodPressureCategory(
+            reading.value.systolic,
+            reading.value.diastolic
+          );
+          const statusInfo = getBloodPressureStatusInfo(category);
+
+          return {
             ...reading,
             systolic: reading.value.systolic,
             diastolic: reading.value.diastolic,
             pulse: reading.value.pulse ?? null,
-          };
-
-          const statusInfo = getBPStatus(
-            baseProcessed.systolic,
-            baseProcessed.diastolic
-          );
-
-          return { ...baseProcessed, status: statusInfo.status } as ProcessedBP;
-        }) as ProcessedBP[]) || []
+            status: statusInfo?.status ?? 'Unknown', // Provide default
+            color: statusInfo?.color ?? 'grey', // Provide default
+          } as ProcessedBP;
+        }) || []
       );
     } else if (type === 'bloodSugar') {
       return (
-        (readings.bloodSugar?.map((reading: BloodSugarReading) => {
-          const baseProcessed: Omit<ProcessedBS, 'status'> = {
+        readings.bloodSugar?.map((reading: BloodSugarReading) => {
+          const category = getBloodSugarCategory(reading.value.level);
+          const statusInfo = getBloodSugarStatusInfo(category);
+
+          return {
             ...reading,
             level: reading.value.level,
-          };
-
-          const statusInfo = getBSStatus(baseProcessed.level);
-
-          return { ...baseProcessed, status: statusInfo.status } as ProcessedBS;
-        }) as ProcessedBS[]) || []
+            status: statusInfo?.status ?? 'Unknown', // Provide default
+            color: statusInfo?.color ?? 'grey', // Provide default
+          } as ProcessedBS;
+        }) || []
       );
     }
     return [];
@@ -288,7 +259,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
   }, [filteredByStatus, selectedDate]);
 
   const filteredData = useMemo(() => {
-    // Use type guards to ensure data is of a single type
     if (type === 'bloodPressure') {
       return filteredByDate.filter(isProcessedBP) as ProcessedBP[];
     } else if (type === 'bloodSugar') {
@@ -408,7 +378,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
                 onClick={handleResetFilters}
                 startIcon={<RestoreIcon />}
                 fullWidth
-                disabled={!statusFilter} // Disable when no filter is applied
+                disabled={statusFilter === 'Tất cả' && !selectedDate} // Disable when no filter is applied
                 sx={{
                   height: '100%',
                 }}
@@ -432,17 +402,14 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
         </Box>
       ) : error ? (
         <Alert severity='error'>{error}</Alert>
-      ) : filteredByStatus.length === 0 ? (
+      ) : filteredData.length === 0 ? (
         <Typography>
           Không có dữ liệu{' '}
-          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'} với trạng thái
-          "{statusFilter}".
-        </Typography>
-      ) : filteredByDate.length === 0 ? (
-        <Typography>
-          Không có dữ liệu{' '}
-          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'} với trạng thái
-          "{statusFilter}" cho ngày đã chọn.
+          {type === 'bloodPressure' ? 'huyết áp' : 'đường huyết'}{' '}
+          {selectedDate
+            ? `với trạng thái "${statusFilter}" cho ngày đã chọn`
+            : `với trạng thái "${statusFilter}"`}
+          .
         </Typography>
       ) : (
         <Paper>
@@ -453,7 +420,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
                   <TableRow hover key={row.id}>
                     {type === 'bloodPressure' && isProcessedBP(row)
                       ? renderBloodPressureRow(row, formatDateTime)
-                      : type === 'bloodSugar' && 'level' in row
+                      : type === 'bloodSugar' && !isProcessedBP(row)
                       ? renderBloodSugarRow(row, formatDateTime)
                       : null}
                   </TableRow>

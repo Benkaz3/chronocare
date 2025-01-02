@@ -3,31 +3,38 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      light: '#a5d6a7', // Light green
-      main: '#66bb6a', // Main green color
-      dark: '#388e3c', // Dark green
+      light: '#a5d6a7',
+      main: '#66bb6a',
+      dark: '#388e3c',
       contrastText: '#fff',
     },
     secondary: {
-      light: '#c8e6c9', // Light secondary green
-      main: '#81c784', // Secondary green
-      dark: '#388e3c', // Dark secondary green
+      light: '#c8e6c9',
+      main: '#81c784',
+      dark: '#388e3c',
       contrastText: '#fff',
     },
     info: {
-      light: '#b9f6ca', // Light info green
-      main: '#69f0ae', // Info green
-      dark: '#00e676', // Dark info green
+      light: '#b9f6ca',
+      main: '#69f0ae',
+      dark: '#00e676',
       contrastText: '#000',
     },
     text: {
-      primary: '#1b5e20', // Dark green for primary text
-      secondary: '#4caf50', // Green for secondary text
-      disabled: '#c8e6c9', // Light green for disabled text
+      primary: '#1b5e20',
+      secondary: '#4caf50',
+      disabled: '#c8e6c9',
     },
     action: {
-      hover: '#e8f5e9', // Light green for hover actions
-      disabledBackground: '#e0f2f1', // Light green for disabled backgrounds
+      hover: '#e8f5e9',
+      disabledBackground: '#e0f2f1',
+    },
+    chart: {
+      // Added custom chart palette
+      // axis: '#1b5e20',
+      // grid: '#e0f2f1',
+      // dataPrimary: '#66bb6a',
+      // dataSecondary: '#81c784',
     },
   },
   typography: {
@@ -101,16 +108,62 @@ const theme = createTheme({
     },
   },
   spacing: 8,
+  shape: {
+    borderRadius: 8,
+  },
+  mixins: {
+    toolbar: {
+      minHeight: 56,
+      '@media (min-width:600px)': {
+        minHeight: 64,
+      },
+    },
+    // Add other custom mixins as needed
+  },
+  transitions: {
+    duration: {
+      shortest: 150,
+      shorter: 200,
+      short: 250,
+      standard: 300,
+      complex: 375,
+      enteringScreen: 225,
+      leavingScreen: 195,
+    },
+    easing: {
+      easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      easeOut: 'cubic-bezier(0.0, 0, 0.2, 1)',
+      easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
+      sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+    },
+  },
   components: {
     MuiButton: {
+      variants: [
+        {
+          props: { variant: 'contained', size: 'large' },
+          style: {
+            padding: '12px 24px',
+            fontSize: '1rem',
+          },
+        },
+        {
+          props: { variant: 'outlined', size: 'large' },
+          style: {
+            padding: '12px 24px',
+            fontSize: '1rem',
+          },
+        },
+      ],
       styleOverrides: {
         contained: {
-          backgroundColor: '#66bb6a', // Use primary main green
+          backgroundColor: '#66bb6a',
           color: '#ffffff',
           textTransform: 'none',
           padding: '10px 0',
+          borderRadius: 8,
           '&:hover': {
-            backgroundColor: '#388e3c', // Use primary dark green
+            backgroundColor: '#388e3c',
           },
           '&:focus-visible': {
             outline: '2px solid #66bb6a',
@@ -119,7 +172,7 @@ const theme = createTheme({
         },
         outlined: {
           backgroundColor: '#ffffff',
-          color: '#66bb6a', // Use primary main green
+          color: '#66bb6a',
           textTransform: 'none',
           padding: '10px 0',
           border: '1px solid rgba(102, 187, 106, 0.7)',
@@ -133,7 +186,7 @@ const theme = createTheme({
           },
         },
         text: {
-          color: '#66bb6a', // Use primary main green
+          color: '#66bb6a',
           textTransform: 'none',
           '&:hover': {
             backgroundColor: 'rgba(102, 187, 106, 0.04)',
@@ -158,7 +211,7 @@ const theme = createTheme({
     MuiLink: {
       styleOverrides: {
         root: {
-          color: '#66bb6a', // Use primary main green
+          color: '#66bb6a',
           textDecoration: 'underline',
           fontSize: '0.725rem',
           '&:focus-visible': {
@@ -197,35 +250,10 @@ const theme = createTheme({
         },
       },
     },
-    MuiList: {
-      styleOverrides: {
-        root: {
-          padding: 0,
-        },
-      },
-    },
-    MuiListItem: {
-      styleOverrides: {
-        root: {
-          padding: 0,
-          margin: 0,
-          height: '20px',
-        },
-      },
-    },
-    MuiTypography: {
-      styleOverrides: {
-        caption: {
-          fontSize: '0.725rem',
-          color: 'text.secondary',
-        },
-      },
-    },
     MuiTabs: {
       styleOverrides: {
-        root: {},
         indicator: {
-          backgroundColor: '#66bb6a', // Use primary main green
+          backgroundColor: '#66bb6a',
         },
       },
     },
@@ -233,7 +261,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&.Mui-selected': {
-            color: '#66bb6a', // Use primary main green
+            color: '#66bb6a',
           },
         },
       },
@@ -313,6 +341,30 @@ const theme = createTheme({
         },
       },
     },
+    MuiList: {
+      styleOverrides: {
+        root: {
+          padding: 0,
+        },
+      },
+    },
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          padding: 0,
+          margin: 0,
+          height: '20px',
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        caption: {
+          fontSize: '0.725rem',
+          color: 'text.secondary',
+        },
+      },
+    },
   },
   breakpoints: {
     values: {
@@ -321,26 +373,6 @@ const theme = createTheme({
       md: 900,
       lg: 1200,
       xl: 1536,
-    },
-  },
-  shape: {
-    borderRadius: 8,
-  },
-  transitions: {
-    duration: {
-      shortest: 150,
-      shorter: 200,
-      short: 250,
-      standard: 300,
-      complex: 375,
-      enteringScreen: 225,
-      leavingScreen: 195,
-    },
-    easing: {
-      easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      easeOut: 'cubic-bezier(0.0, 0, 0.2, 1)',
-      easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-      sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
     },
   },
 });
