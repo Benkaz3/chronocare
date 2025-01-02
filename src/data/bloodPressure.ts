@@ -77,32 +77,32 @@ export const bloodPressureRanges: BloodPressureRange[] = [
 export const bloodPressureSegments: GaugeSegment<string>[] = [
   {
     label: 'Huyết áp thấp',
-    value: 16, // 0-16%
+    value: 10, // 0-16%
     color: '#2196f3', // Blue
   },
   {
     label: 'Bình Thường',
-    value: 16, // 17-32%
+    value: 20, // 17-32%
     color: '#4caf50', // Green
   },
   {
     label: 'Tiền Tăng Huyết Áp',
-    value: 16, // 33-48%
+    value: 20, // 33-48%
     color: '#ff9800', // Orange
   },
   {
     label: 'Tăng Huyết Áp Giai Đoạn 1',
-    value: 16, // 49-64%
+    value: 20, // 49-64%
     color: '#FA6E1B', // Dark Orange
   },
   {
     label: 'Tăng Huyết Áp Giai Đoạn 2',
-    value: 16, // 65-80%
+    value: 20, // 65-80%
     color: '#f44336', // Red
   },
   {
     label: 'Huyết áp BÁO ĐỘNG!',
-    value: 16, // 81-96%
+    value: 10, // 81-96%
     color: '#b71c1c', // Dark Red
   },
 ];
@@ -174,17 +174,17 @@ export const mapBloodPressureCategoryToGaugeValue = (
 ): number => {
   switch (category) {
     case 'Hypotension':
-      return 8; // Midpoint of 0-16%
+      return 5; // Midpoint of 0-10%
     case 'Normal':
-      return 24; // Midpoint of 17-32%
+      return 20; // Midpoint of 10-30%
     case 'Elevated':
-      return 40; // Midpoint of 33-48%
+      return 40; // Midpoint of 30-50%
     case 'Hypertension Stage 1':
-      return 56; // Midpoint of 49-64%
+      return 60; // Midpoint of 50-70%
     case 'Hypertension Stage 2':
-      return 72; // Midpoint of 65-80%
+      return 80; // Midpoint of 70-90%
     case 'Hypertensive Crisis':
-      return 88; // Midpoint of 81-96%
+      return 95; // Midpoint of 90-100%
     case 'Invalid':
     default:
       return 0; // Represents an invalid state

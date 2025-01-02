@@ -12,6 +12,7 @@ const RecordPage = lazy(() => import('./pages/Dashboard/RecordPage'));
 const HistoryPage = lazy(() => import('./pages/Dashboard/HistoryPage'));
 const StatsPage = lazy(() => import('./pages/Dashboard/StatsPage'));
 const SettingsPage = lazy(() => import('./pages/Dashboard/SettingsPage'));
+import { HealthDataProvider } from './context/HealthDataContext';
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
@@ -48,7 +49,9 @@ const App: React.FC = () => {
           path='/dashboard/*'
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <HealthDataProvider>
+                <Dashboard />
+              </HealthDataProvider>
             </ProtectedRoute>
           }
         >
