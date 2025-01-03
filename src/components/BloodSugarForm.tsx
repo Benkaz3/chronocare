@@ -6,6 +6,7 @@ import { useHealthData } from '../context/HealthDataContext';
 import NumberAutocomplete from './NumberAutocomplete';
 import FormAlert from './FormAlert';
 import { getBloodSugarCategory } from '../data/bloodSugar';
+import LastReading from './LastReading'; // Import LastReading component
 
 interface BloodSugarFormProps {
   inputBS: {
@@ -36,30 +37,25 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
   successMessage,
   setSuccessMessage,
 }) => {
-  const { addBloodSugarReading, loading } = useHealthData();
+  const { addBloodSugarReading, loading, bloodSugar } = useHealthData(); // Include bloodSugar from context
 
-  // Handle Input Changes
   const handleBSChange = (
     _event: React.SyntheticEvent<Element, Event>,
     newValue: string | null
   ) => {
     const value = newValue || '';
     setInputBS({ level: value });
-    // Reset success message and BS error on input change
     setSuccessMessage('');
     if (errors.bs) {
       setErrors((prev) => ({ ...prev, bs: '' }));
     }
   };
 
-  // Submit BS Form
   const handleBSSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Parse input
     const level = parseFloat(inputBS.level);
 
-    // Validate input using context's status info
     const category = getBloodSugarCategory(level);
     if (category === 'Invalid') {
       setErrors({
@@ -69,7 +65,6 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
       return;
     }
 
-    // If valid, create data object
     const bsData = {
       level,
       time: new Date().toISOString(),
@@ -87,7 +82,6 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
 
   return (
     <form onSubmit={handleBSSubmit}>
-      {/* Blood Sugar Level Input */}
       <Box
         sx={{
           gap: isMobile ? 0.5 : 1.5,
@@ -100,6 +94,7 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
       >
         <NumberAutocomplete
           label='Đ.Huyết'
+          placeholder='VD: 90'
           unit='mg/dL'
           value={inputBS.level}
           options={bloodSugarOptions}
@@ -130,6 +125,8 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
       </Button>
 
       <FormAlert successMessage={successMessage} errorMessage={errors.bs} />
+
+      <LastReading reading={bloodSugar} type='bloodSugar' />
     </form>
   );
 };

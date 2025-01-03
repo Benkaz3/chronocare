@@ -1,5 +1,3 @@
-// src/components/BloodPressureGauge.tsx
-
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Alert } from '@mui/material';
 import LinearGauge from './LinearGauge';
@@ -13,42 +11,51 @@ import {
 } from '../data/bloodPressure';
 
 interface BloodPressureGaugeProps {
-  systolic: number;
-  diastolic: number;
+  systolic: string;
+  diastolic: string;
 }
-
 const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
   systolic,
   diastolic,
 }) => {
-  const [gaugeValue, setGaugeValue] = useState<number>(0);
+  const [gaugeValue, setGaugeValue] = useState<number | null>(null);
   const [statusInfo, setStatusInfo] = useState<StatusInfo | null>(null);
 
   useEffect(() => {
-    const category = getBloodPressureCategory(systolic, diastolic);
-    const value = mapBloodPressureCategoryToGaugeValue(category);
-    setGaugeValue(value);
-    setStatusInfo(getBloodPressureStatusInfo(category));
+    const systolicValue = parseInt(systolic, 10);
+    const diastolicValue = parseInt(diastolic, 10);
+
+    if (!isNaN(systolicValue) && !isNaN(diastolicValue)) {
+      const category = getBloodPressureCategory(systolicValue, diastolicValue);
+      const value = mapBloodPressureCategoryToGaugeValue(category);
+      setGaugeValue(value);
+      setStatusInfo(getBloodPressureStatusInfo(category));
+    } else {
+      // Inputs are empty or invalid
+      setGaugeValue(null); // Indicate no value
+      setStatusInfo(null); // Clear status info
+    }
   }, [systolic, diastolic]);
 
   return (
     <Box>
       <Box display='flex' flexDirection='column' gap={1}>
+        {/* Linear Gauge */}
         <Box>
           <LinearGauge
             segments={bloodPressureSegments}
             currentValue={gaugeValue}
+            isBlurred={gaugeValue === null} // Blur gauge when no valid input
           />
         </Box>
 
-        {/* Thông Tin Trạng Thái */}
-        {statusInfo && (
+        {statusInfo ? (
           <Box sx={{ minHeight: '150px', mt: 0 }}>
             <Alert severity={getBloodPressureAlertSeverity(statusInfo.status)}>
               <Typography
                 variant='h6'
                 gutterBottom
-                sx={{ color: statusInfo.color || 'inherit' }} // Dynamically apply color if available
+                sx={{ color: statusInfo.color || 'inherit' }}
               >
                 {statusInfo.status}
               </Typography>
@@ -58,6 +65,16 @@ const BloodPressureGauge: React.FC<BloodPressureGaugeProps> = ({
               <Typography variant='body2'>{statusInfo.action}</Typography>
             </Alert>
           </Box>
+        ) : (
+          <Typography
+            variant='body2'
+            color='textSecondary'
+            fontStyle='italic'
+            textAlign='center'
+            sx={{ minHeight: '150px', mt: 0 }}
+          >
+            Vui lòng nhập chỉ số để xem trạng thái
+          </Typography>
         )}
       </Box>
     </Box>

@@ -15,6 +15,7 @@ interface NumberAutocompleteProps {
   ) => void;
   min: number;
   max: number;
+  placeholder?: string;
   error?: boolean;
   'aria-label': string;
   width: number | string;
@@ -28,6 +29,7 @@ const NumberAutocomplete: React.FC<NumberAutocompleteProps> = ({
   onChange,
   min,
   max,
+  placeholder = '',
   error = false,
   'aria-label': ariaLabel,
   width,
@@ -45,7 +47,7 @@ const NumberAutocomplete: React.FC<NumberAutocompleteProps> = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 0.3,
+            gap: 0.1,
           }}
         >
           <Typography variant='body1' component='label' htmlFor={params.id}>
@@ -62,8 +64,19 @@ const NumberAutocomplete: React.FC<NumberAutocompleteProps> = ({
             ...params.inputProps,
             min,
             max,
+            placeholder,
             style: { textAlign: 'center' },
             'aria-label': ariaLabel,
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              padding: '8px',
+            },
+            input: {
+              '::placeholder': {
+                fontSize: '0.875rem',
+              },
+            },
           }}
           error={error}
           aria-invalid={error}

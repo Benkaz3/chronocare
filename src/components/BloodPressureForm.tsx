@@ -7,6 +7,7 @@ import { useHealthData } from '../context/HealthDataContext';
 import NumberAutocomplete from './NumberAutocomplete';
 import FormAlert from './FormAlert';
 import { getBloodPressureCategory } from '../data/bloodPressure';
+import LastReading from './LastReading';
 
 interface BloodPressureFormProps {
   inputBP: {
@@ -51,7 +52,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
   successMessage,
   setSuccessMessage,
 }) => {
-  const { addBloodPressureReading, loading } = useHealthData();
+  const { addBloodPressureReading, loading, bloodPressure } = useHealthData();
 
   // Handle Input Changes
   const handleBPChange =
@@ -59,7 +60,6 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
     (_event: React.SyntheticEvent<Element, Event>, newValue: string | null) => {
       const value = newValue || '';
       setInputBP((prev) => ({ ...prev, [field]: value }));
-      // Reset success message and specific error on input change
       setSuccessMessage('');
       if (errors.bp) {
         setErrors((prev) => ({ ...prev, bp: '' }));
@@ -69,16 +69,13 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
       }
     };
 
-  // Submit BP Form
   const handleBPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Parse inputs
     const systolic = parseInt(inputBP.systolic, 10);
     const diastolic = parseInt(inputBP.diastolic, 10);
     const pulse = parseInt(inputBP.pulse, 10);
 
-    // Validate inputs using context's status info
     const category = getBloodPressureCategory(systolic, diastolic);
     if (category === 'Invalid' || pulse < 40 || pulse > 180) {
       setErrors({
@@ -128,6 +125,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
       >
         <NumberAutocomplete
           label='Systolic'
+          placeholder='VD: 114'
           unit='mmHg'
           value={inputBP.systolic}
           options={systolicOptions}
@@ -141,6 +139,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
 
         <NumberAutocomplete
           label='Diastolic'
+          placeholder='VD: 80'
           unit='mmHg'
           value={inputBP.diastolic}
           options={diastolicOptions}
@@ -154,6 +153,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
 
         <NumberAutocomplete
           label='Nhịp'
+          placeholder='VD: 85'
           unit='bpm'
           value={inputBP.pulse}
           options={pulseOptions}
@@ -187,6 +187,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
         successMessage={successMessage}
         errorMessage={errors.bp || errors.bpPulse}
       />
+      <LastReading reading={bloodPressure} type='bloodPressure' />
     </form>
   );
 };

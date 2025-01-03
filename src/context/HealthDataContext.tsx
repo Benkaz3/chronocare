@@ -18,14 +18,21 @@ import {
   getBloodSugarStatusInfo,
 } from '../data/bloodSugar';
 
+// Extend the existing data interfaces to include 'status'
+interface BloodPressureReading extends BloodPressureData {
+  status: string;
+}
+
+interface BloodSugarReading extends BloodSugarData {
+  status: string;
+}
+
 // Define the shape of the context
 interface HealthDataContextProps {
-  bloodPressure: BloodPressureData;
-  bloodSugar: BloodSugarData;
+  bloodPressure: BloodPressureReading | null;
+  bloodSugar: BloodSugarReading | null;
   addBloodPressureReading: (data: BloodPressureData) => Promise<void>;
   addBloodSugarReading: (data: BloodSugarData) => Promise<void>;
-  bpStatusInfo: ReturnType<typeof getBloodPressureStatusInfo> | null;
-  bsStatusInfo: ReturnType<typeof getBloodSugarStatusInfo> | null;
   loading: boolean;
 }
 
@@ -40,24 +47,10 @@ export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const { addReading, loading } = useUserData();
 
-  const [bloodPressure, setBloodPressure] = useState<BloodPressureData>({
-    systolic: 120,
-    diastolic: 80,
-    pulse: 70,
-    time: new Date().toISOString(),
-  });
+  const [bloodPressure, setBloodPressure] =
+    useState<BloodPressureReading | null>(null);
 
-  const [bloodSugar, setBloodSugar] = useState<BloodSugarData>({
-    level: 75,
-    time: new Date().toISOString(),
-  });
-
-  const [bpStatusInfo, setBpStatusInfo] = useState<ReturnType<
-    typeof getBloodPressureStatusInfo
-  > | null>(null);
-  const [bsStatusInfo, setBsStatusInfo] = useState<ReturnType<
-    typeof getBloodSugarStatusInfo
-  > | null>(null);
+  const [bloodSugar, setBloodSugar] = useState<BloodSugarReading | null>(null);
 
   // Fetch last readings from localStorage on mount
   useEffect(() => {
@@ -66,12 +59,18 @@ export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({
       if (lastBP) {
         try {
           const parsedBP: BloodPressureData = JSON.parse(lastBP);
-          setBloodPressure(parsedBP);
-          setBpStatusInfo(
-            getBloodPressureStatusInfo(
-              getBloodPressureCategory(parsedBP.systolic, parsedBP.diastolic)
-            )
+          const category = getBloodPressureCategory(
+            parsedBP.systolic,
+            parsedBP.diastolic
           );
+          const statusInfo = getBloodPressureStatusInfo(category);
+
+          const status = statusInfo ? statusInfo.status : 'Unknown';
+
+          setBloodPressure({
+            ...parsedBP,
+            status: status,
+          });
         } catch (error) {
           console.error(
             'Error parsing lastBloodPressure from localStorage:',
@@ -84,10 +83,15 @@ export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({
       if (lastBS) {
         try {
           const parsedBS: BloodSugarData = JSON.parse(lastBS);
-          setBloodSugar(parsedBS);
-          setBsStatusInfo(
-            getBloodSugarStatusInfo(getBloodSugarCategory(parsedBS.level))
-          );
+          const category = getBloodSugarCategory(parsedBS.level);
+          const statusInfo = getBloodSugarStatusInfo(category);
+
+          const status = statusInfo ? statusInfo.status : 'Unknown';
+
+          setBloodSugar({
+            ...parsedBS,
+            status: status,
+          });
         } catch (error) {
           console.error(
             'Error parsing lastBloodSugar from localStorage:',
@@ -103,20 +107,34 @@ export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({
   // Function to add blood pressure reading
   const addBloodPressureReading = async (data: BloodPressureData) => {
     await addReading('bloodPressure', data);
-    setBloodPressure(data);
-    setBpStatusInfo(
-      getBloodPressureStatusInfo(
-        getBloodPressureCategory(data.systolic, data.diastolic)
-      )
-    );
+    const category = getBloodPressureCategory(data.systolic, data.diastolic);
+    const statusInfo = getBloodPressureStatusInfo(category);
+
+    const status = statusInfo ? statusInfo.status : 'Unknown';
+
+    const bpReading: BloodPressureReading = {
+      ...data,
+      status: status,
+    };
+
+    setBloodPressure(bpReading);
     localStorage.setItem('lastBloodPressure', JSON.stringify(data));
   };
 
   // Function to add blood sugar reading
   const addBloodSugarReading = async (data: BloodSugarData) => {
     await addReading('bloodSugar', data);
-    setBloodSugar(data);
-    setBsStatusInfo(getBloodSugarStatusInfo(getBloodSugarCategory(data.level)));
+    const category = getBloodSugarCategory(data.level);
+    const statusInfo = getBloodSugarStatusInfo(category);
+
+    const status = statusInfo ? statusInfo.status : 'Unknown';
+
+    const bsReading: BloodSugarReading = {
+      ...data,
+      status: status,
+    };
+
+    setBloodSugar(bsReading);
     localStorage.setItem('lastBloodSugar', JSON.stringify(data));
   };
 
@@ -127,8 +145,6 @@ export const HealthDataProvider: React.FC<{ children: ReactNode }> = ({
         bloodSugar,
         addBloodPressureReading,
         addBloodSugarReading,
-        bpStatusInfo,
-        bsStatusInfo,
         loading,
       }}
     >

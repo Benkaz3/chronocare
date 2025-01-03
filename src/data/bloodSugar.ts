@@ -193,10 +193,10 @@ export const getBloodSugarStatusInfo = (
     case 'Invalid':
     default:
       return {
-        status: 'Không hợp lệ',
-        explanation: 'Chỉ số đường huyết bạn nhập không hợp lệ.',
-        action: 'Vui lòng nhập một chỉ số đường huyết hợp lệ.',
-        color: '', // No color
+        status: 'Bạn chưa nhập dữ liệu đường huyết',
+        explanation: '',
+        action: '',
+        color: '#9e9e9e', // No color
       };
   }
 };

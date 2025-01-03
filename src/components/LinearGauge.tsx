@@ -1,10 +1,7 @@
-// src/components/LinearGauge.tsx
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import React from 'react';
 
 export interface GaugeSegment<TLabel extends React.ReactNode> {
   label: TLabel;
@@ -14,7 +11,8 @@ export interface GaugeSegment<TLabel extends React.ReactNode> {
 
 export interface LinearGaugeProps<TLabel extends React.ReactNode> {
   segments: GaugeSegment<TLabel>[];
-  currentValue: number; // 1 to 100
+  currentValue: number | null; // Accepts null when there's no valid value
+  isBlurred?: boolean;
 }
 
 const GaugeContainer = styled(Box)(() => ({
@@ -31,51 +29,37 @@ const GaugeSVG = styled('svg')({
   height: '100%',
 });
 
-const Heart = styled(FavoriteIcon)(() => ({
+const Heart = styled(FavoriteIcon)(({ theme }) => ({
   position: 'absolute',
   top: '5px',
   transform: 'translateX(-50%)',
   transition: 'left 0.5s ease',
   zIndex: 2,
   fontSize: '24px',
-  color: '#DE0D92',
+  color: theme.palette.error.main,
 }));
 
-// const Label = styled(Typography)({
-//   position: 'absolute',
-//   transform: 'translateX(-50%)',
-//   top: '-20px',
-//   whiteSpace: 'nowrap',
-//   zIndex: 3,
-// });
-
-// Constrain TLabel to extend React.ReactNode
 const LinearGauge = <TLabel extends React.ReactNode>({
   segments,
   currentValue,
+  isBlurred = false,
 }: LinearGaugeProps<TLabel>) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const total = 100; // Gauge range is 1-100
 
-  // Clamp currentValue between 0 and 100
-  const clampedValue = Math.min(Math.max(currentValue, 0), total);
+  // Clamp currentValue between 0 and 100, if currentValue is not null
+  const clampedValue =
+    currentValue !== null ? Math.min(Math.max(currentValue, 0), total) : null;
 
   // Calculate the position percentage of the current value
-  const positionPercentage = clampedValue / total;
-
-  // Determine the current segment based on currentValue
-  let cumulative = 0;
-  for (const segment of segments) {
-    cumulative += segment.value;
-    if (clampedValue <= cumulative) {
-      break;
-    }
-  }
+  const positionPercentage = clampedValue !== null ? clampedValue / total : 0;
 
   useEffect(() => {
-    setIsTransitioning(true);
-  }, [clampedValue]);
+    if (currentValue !== null) {
+      setIsTransitioning(true);
+    }
+  }, [currentValue]); // Include currentValue in the dependency array
 
   useEffect(() => {
     if (isTransitioning) {
@@ -85,7 +69,11 @@ const LinearGauge = <TLabel extends React.ReactNode>({
   }, [isTransitioning]);
 
   return (
-    <GaugeContainer>
+    <GaugeContainer
+      sx={{
+        filter: isBlurred ? 'blur(4px)' : 'none', // Apply blur effect when isBlurred is true
+      }}
+    >
       <GaugeSVG>
         {segments.map((segment, index) => {
           const startPercentage =
@@ -106,13 +94,9 @@ const LinearGauge = <TLabel extends React.ReactNode>({
         })}
       </GaugeSVG>
       {/* Heart Needle */}
-      <Heart sx={{ left: `${positionPercentage * 100}%` }} />
-      {/* Current Label */}
-      {/* {currentSegment && !isTransitioning && (
-        <Label variant='h6' style={{ left: `${positionPercentage * 100}%` }}>
-          {currentSegment.label}
-        </Label>
-      )} */}
+      {clampedValue !== null && !isBlurred && (
+        <Heart sx={{ left: `${positionPercentage * 100}%` }} />
+      )}
     </GaugeContainer>
   );
 };

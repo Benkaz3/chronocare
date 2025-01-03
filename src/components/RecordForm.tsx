@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Tabs, Tab, Box, useTheme, useMediaQuery } from '@mui/material';
-import { useHealthData } from '../context/HealthDataContext';
 import BloodPressureGauge from './BloodPressureGauge';
 import BloodSugarGauge from './Bsgauge';
 import BloodPressureForm from './BloodPressureForm';
@@ -36,22 +35,23 @@ const RecordForm: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { bloodPressure, bloodSugar } = useHealthData();
+  // Removed unused variables
+  // const { bloodPressure, bloodSugar } = useHealthData();
 
   const [inputBP, setInputBP] = useState<{
     systolic: string;
     diastolic: string;
     pulse: string;
   }>({
-    systolic: bloodPressure.systolic.toString(),
-    diastolic: bloodPressure.diastolic.toString(),
-    pulse: bloodPressure.pulse.toString(),
+    systolic: '',
+    diastolic: '',
+    pulse: '',
   });
 
   const [inputBS, setInputBS] = useState<{
     level: string;
   }>({
-    level: bloodSugar.level.toString(),
+    level: '',
   });
 
   const [errorsBP, setErrorsBP] = useState<{
@@ -60,6 +60,12 @@ const RecordForm: React.FC = () => {
   }>({
     bp: '',
     bpPulse: '',
+  });
+
+  const [errorsBS, setErrorsBS] = useState<{
+    bs: string;
+  }>({
+    bs: '',
   });
 
   const [successBP, setSuccessBP] = useState<string>('');
@@ -86,6 +92,7 @@ const RecordForm: React.FC = () => {
     (_event: React.SyntheticEvent, newValue: number) => {
       setTabValue(newValue);
       setErrorsBP({ bp: '', bpPulse: '' });
+      setErrorsBS({ bs: '' });
       setSuccessBP('');
       setSuccessBS('');
     },
@@ -121,8 +128,8 @@ const RecordForm: React.FC = () => {
 
       <TabPanel value={tabValue} index={0}>
         <BloodPressureGauge
-          systolic={parseInt(inputBP.systolic, 10)}
-          diastolic={parseInt(inputBP.diastolic, 10)}
+          systolic={inputBP.systolic}
+          diastolic={inputBP.diastolic}
         />
         <BloodPressureForm
           inputBP={inputBP}
@@ -139,17 +146,14 @@ const RecordForm: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
-        <BloodSugarGauge level={parseFloat(inputBS.level)} />
-
+        <BloodSugarGauge level={inputBS.level} />
         <BloodSugarForm
           inputBS={inputBS}
           setInputBS={setInputBS}
           bloodSugarOptions={bloodSugarOptions}
           isMobile={isMobile}
-          errors={{
-            bs: '',
-          }}
-          setErrors={() => {}}
+          errors={errorsBS}
+          setErrors={setErrorsBS}
           successMessage={successBS}
           setSuccessMessage={setSuccessBS}
         />
