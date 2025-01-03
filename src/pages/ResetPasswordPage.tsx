@@ -1,3 +1,4 @@
+// This page is currently NOT used. Here's for future use if any
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
@@ -25,20 +26,16 @@ const ResetPasswordPage: React.FC = () => {
   } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Reference to the alert for focus management
   const alertRef = useRef<HTMLDivElement>(null);
 
-  // Shift focus to the alert when a message appears
   useEffect(() => {
     if (message && alertRef.current) {
       alertRef.current.focus();
     }
   }, [message]);
 
-  // Example error state for email validation
   const [emailError, setEmailError] = useState<string | undefined>(undefined);
 
-  // email format validation
   useEffect(() => {
     if (email === '') {
       setEmailError(undefined);

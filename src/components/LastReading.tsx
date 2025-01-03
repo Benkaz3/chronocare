@@ -2,8 +2,13 @@
 
 import React from 'react';
 import { Typography, useTheme, Paper, Divider } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/vi'; // Import Vietnamese locale
+
+// Initialize dayjs with the relativeTime plugin and set the locale to Vietnamese
+dayjs.extend(relativeTime);
+dayjs.locale('vi');
 
 interface BloodPressureReading {
   systolic: number;
@@ -29,10 +34,8 @@ const LastReading: React.FC<LastReadingProps> = ({ reading, type }) => {
 
   if (!reading) return null;
 
-  const timeAgo = formatDistanceToNow(new Date(reading.time), {
-    addSuffix: true,
-    locale: vi,
-  });
+  // Use dayjs to calculate the relative time from now
+  const timeAgo = dayjs(reading.time).fromNow();
 
   return (
     <Paper

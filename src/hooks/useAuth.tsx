@@ -133,6 +133,7 @@ const useAuth = () => {
     }
   };
 
+  // UNUSED - Here's for future if needed
   const signUpWithEmail = async (
     email: string,
     password: string
@@ -160,6 +161,7 @@ const useAuth = () => {
     }
   };
 
+  // UNUSED - Here's for future if needed
   const signInWithEmail = async (
     email: string,
     password: string
