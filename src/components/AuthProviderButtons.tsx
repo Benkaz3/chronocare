@@ -1,57 +1,43 @@
+// components/AuthProviderButtons.tsx
 import React from 'react';
-import { Button, Box } from '@mui/material';
-import GoogleLogo from '../assets/google-logo.svg';
-import TwitterLogo from '../assets/twitter-logo.svg';
-import { GoogleAuthProvider, TwitterAuthProvider } from 'firebase/auth';
+import { Button, Stack } from '@mui/material';
+import {
+  Google as GoogleIcon,
+  Twitter as TwitterIcon,
+} from '@mui/icons-material';
 
 interface AuthProviderButtonsProps {
-  onSignIn: (
-    provider: GoogleAuthProvider | TwitterAuthProvider,
-    providerName: string
-  ) => void;
-  disabled?: boolean;
+  onSignIn: (provider: string) => void;
+  disabled: boolean;
 }
 
 const AuthProviderButtons: React.FC<AuthProviderButtonsProps> = ({
   onSignIn,
-  disabled = false,
-}) => (
-  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-    <Button
-      variant='contained'
-      disabled={disabled}
-      onClick={() => onSignIn(new GoogleAuthProvider(), 'Google')}
-      aria-label='Sign in with Google'
-      sx={{
-        width: '49%',
-      }}
-    >
-      <img
-        src={GoogleLogo}
-        alt=''
-        style={{ width: 20, marginRight: 8 }}
-        aria-hidden='true'
-      />
-      Google
-    </Button>
-    <Button
-      variant='contained'
-      disabled={disabled}
-      onClick={() => onSignIn(new TwitterAuthProvider(), 'Twitter')}
-      aria-label='Sign in with Twitter'
-      sx={{
-        width: '49%',
-      }}
-    >
-      <img
-        src={TwitterLogo}
-        alt=''
-        style={{ width: 20, marginRight: 8 }}
-        aria-hidden='true'
-      />
-      Twitter
-    </Button>
-  </Box>
-);
+  disabled,
+}) => {
+  const providers = [
+    { name: 'Google', icon: <GoogleIcon />, id: 'google' },
+    { name: 'Twitter', icon: <TwitterIcon />, id: 'twitter' },
+    // Add more providers as needed
+  ];
+
+  return (
+    <Stack spacing={2}>
+      {providers.map((provider) => (
+        <Button
+          key={provider.id}
+          variant='contained'
+          startIcon={provider.icon}
+          onClick={() => onSignIn(provider.id)}
+          disabled={disabled}
+          fullWidth
+          aria-label={`Sign in with ${provider.name}`}
+        >
+          {`Đăng nhập với ${provider.name}`}
+        </Button>
+      ))}
+    </Stack>
+  );
+};
 
 export default AuthProviderButtons;

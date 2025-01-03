@@ -1,7 +1,9 @@
+// hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GoogleAuthProvider,
+  FacebookAuthProvider,
   TwitterAuthProvider,
   signInWithPopup,
   createUserWithEmailAndPassword,
@@ -12,7 +14,6 @@ import {
   UserCredential,
 } from 'firebase/auth';
 import { auth } from '../firebase';
-import { Typography } from '@mui/material';
 
 // Firebase Auth error codes
 type FirebaseAuthErrorCode =
@@ -29,11 +30,11 @@ type FirebaseAuthErrorCode =
 // Interface for authentication messages
 interface AuthMessage {
   type: 'success' | 'error';
-  text: React.ReactNode;
+  text: string;
 }
 
 // Mapping of Firebase error codes to user-friendly messages
-const errorMessages: Record<FirebaseAuthErrorCode, React.ReactNode> = {
+const errorMessages: Record<FirebaseAuthErrorCode, string> = {
   'auth/email-already-in-use':
     'Email đã được sử dụng. Vui lòng đăng nhập hoặc sử dụng email khác.',
   'auth/invalid-email': 'Email không đúng.',
@@ -81,14 +82,7 @@ const useAuth = () => {
   ) => {
     setMessage({
       type: 'success',
-      text: (
-        <>
-          {messageText}{' '}
-          <Typography component='span' variant='body2'>
-            Đang chuyển hướng...
-          </Typography>
-        </>
-      ),
+      text: `${messageText} Đang chuyển hướng...`,
     });
     setTimeout(() => {
       navigate(redirectPath);
@@ -96,10 +90,33 @@ const useAuth = () => {
   };
 
   const signInWithProvider = async (
-    provider: GoogleAuthProvider | TwitterAuthProvider,
     providerName: string
   ): Promise<UserCredential | null> => {
     setLoading(true);
+    let provider:
+      | GoogleAuthProvider
+      | FacebookAuthProvider
+      | TwitterAuthProvider;
+
+    switch (providerName.toLowerCase()) {
+      case 'google':
+        provider = new GoogleAuthProvider();
+        break;
+      case 'facebook':
+        provider = new FacebookAuthProvider();
+        break;
+      case 'twitter':
+        provider = new TwitterAuthProvider();
+        break;
+      default:
+        setMessage({
+          type: 'error',
+          text: 'Provider không hợp lệ.',
+        });
+        setLoading(false);
+        return null;
+    }
+
     try {
       const result = await signInWithPopup(auth, provider);
       handleSuccess(`Đăng nhập thành công với ${providerName}!`, '/dashboard');
@@ -164,7 +181,7 @@ const useAuth = () => {
     setLoading(true);
     try {
       await firebaseSignOut(auth);
-      handleSuccess('Đăng xuất thành công!', '/auth');
+      handleSuccess('Đăng xuất thành công!', '/auth', 1500);
     } catch (err: any) {
       console.error('Error signing out:', err);
       setMessage({

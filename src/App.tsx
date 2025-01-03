@@ -13,6 +13,7 @@ const HistoryPage = lazy(() => import('./pages/Dashboard/HistoryPage'));
 const StatsPage = lazy(() => import('./pages/Dashboard/StatsPage'));
 const SettingsPage = lazy(() => import('./pages/Dashboard/SettingsPage'));
 import { HealthDataProvider } from './context/HealthDataContext';
+import TermsPrivacyPolicy from './pages/terms-privacy-policy';
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
@@ -24,7 +25,6 @@ const App: React.FC = () => {
   return (
     <Suspense fallback={<Spinner />}>
       <Routes>
-        {/* Root Route */}
         <Route
           path='/'
           element={
@@ -36,13 +36,13 @@ const App: React.FC = () => {
           }
         />
 
-        {/* Authentication Route */}
         <Route
           path='/auth'
           element={
             !user ? <AuthPage /> : <Navigate to='/dashboard/record' replace />
           }
         />
+        <Route path='/terms-privacy-policy' element={<TermsPrivacyPolicy />} />
 
         {/* Dashboard Routes Protected by ProtectedRoute */}
         <Route
