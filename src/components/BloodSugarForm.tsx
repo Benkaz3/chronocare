@@ -1,7 +1,7 @@
 // src/components/BloodSugarForm.tsx
 
 import React, { useState } from 'react';
-import { Box, Button, Dialog, Typography } from '@mui/material';
+import { Box, Button, Dialog, Typography, Stack } from '@mui/material';
 import {
   LocalizationProvider,
   StaticDateTimePicker,
@@ -131,6 +131,11 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
   const displayDate = isToday ? 'Hôm nay' : selectedDateTime.format('DD/MM');
   const displayTime = selectedDateTime.format('h:mm A');
 
+  // Handler for the "Done" button
+  const handleDone = () => {
+    setIsPickerOpen(false);
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <form onSubmit={handleBSSubmit}>
@@ -209,6 +214,22 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
               onAccept={() => setIsPickerOpen(false)}
               disableFuture
             />
+            {/* Action Buttons */}
+            <Stack
+              direction='row'
+              spacing={2}
+              justifyContent='flex-end'
+              sx={{ mt: 2 }}
+            >
+              <Button
+                onClick={handleDone}
+                variant='outlined'
+                color='primary'
+                sx={{ padding: '4px 8px' }}
+              >
+                Hoàn tất
+              </Button>
+            </Stack>
           </Box>
         </Dialog>
 

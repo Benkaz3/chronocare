@@ -35,9 +35,6 @@ const RecordForm: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Removed unused variables
-  // const { bloodPressure, bloodSugar } = useHealthData();
-
   const [inputBP, setInputBP] = useState<{
     systolic: string;
     diastolic: string;
