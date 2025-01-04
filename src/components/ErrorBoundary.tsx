@@ -51,6 +51,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             variant='contained'
             color='primary'
             onClick={this.handleReload}
+            sx={{ padding: '0.825rem' }}
           >
             Tải lại trang
           </Button>

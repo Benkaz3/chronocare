@@ -54,3 +54,5 @@ todo.txt
 # Optional: Ignore specific assets if not needed
 # src/assets/fonts/
 # src/assets/images/
+# Local Netlify folder
+.netlify
