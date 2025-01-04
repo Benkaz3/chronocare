@@ -76,7 +76,7 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
       if (errors.dateTime) {
         setErrors((prev) => ({ ...prev, dateTime: '' }));
       }
-      setIsPickerOpen(false); // Close picker after selection
+      // Close picker after selection
     }
   };
 
@@ -206,6 +206,7 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
               displayStaticWrapperAs='desktop'
               value={selectedDateTime}
               onChange={handleDateTimeChange}
+              onAccept={() => setIsPickerOpen(false)}
               disableFuture
             />
           </Box>

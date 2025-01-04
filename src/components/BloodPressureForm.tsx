@@ -93,7 +93,6 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
       if (errors.dateTime) {
         setErrors((prev) => ({ ...prev, dateTime: '' }));
       }
-      setIsPickerOpen(false); // Close picker after selection
     }
   };
 
@@ -263,6 +262,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
               displayStaticWrapperAs='desktop'
               value={selectedDateTime}
               onChange={handleDateTimeChange}
+              onAccept={() => setIsPickerOpen(false)}
               disableFuture
             />
           </Box>
