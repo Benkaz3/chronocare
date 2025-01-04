@@ -156,7 +156,7 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
             max={500}
             error={!!errors.bs}
             aria-label='Blood Sugar Level in mg/dL'
-            width={isMobile ? 100 : 120}
+            width={isMobile ? 75 : 120}
           />
         </Box>
         {/* Date-Time Display */}
@@ -179,14 +179,18 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
         >
           {/* Date Section */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <CalendarTodayIcon color='action' />
-            <Typography variant='body1'>{displayDate}</Typography>
+            <CalendarTodayIcon color='disabled' />
+            <Typography variant='body2' sx={{ fontWeight: '400' }}>
+              {displayDate}
+            </Typography>
           </Box>
 
           {/* Time Section */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTimeIcon color='action' />
-            <Typography variant='body1'>{displayTime}</Typography>
+            <AccessTimeIcon color='disabled' />
+            <Typography variant='body2' sx={{ fontWeight: '400' }}>
+              {displayTime}
+            </Typography>
           </Box>
         </Box>
 

@@ -184,7 +184,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
             max={200}
             error={!!errors.bp}
             aria-label='Systolic Blood Pressure in mm Hg'
-            width={isMobile ? 100 : 120}
+            width={isMobile ? 75 : 120}
           />
 
           <NumberAutocomplete
@@ -198,7 +198,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
             max={120}
             error={!!errors.bp}
             aria-label='Diastolic Blood Pressure in mm Hg'
-            width={isMobile ? 100 : 120}
+            width={isMobile ? 75 : 120}
           />
 
           <NumberAutocomplete
@@ -212,7 +212,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
             max={180}
             error={!!errors.bpPulse}
             aria-label='Pulse in bpm'
-            width={isMobile ? 100 : 120}
+            width={isMobile ? 75 : 120}
           />
         </Box>
 
@@ -236,14 +236,18 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
         >
           {/* Date Section */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <CalendarTodayIcon color='action' />
-            <Typography variant='body1'>{displayDate}</Typography>
+            <CalendarTodayIcon color='disabled' />
+            <Typography variant='body2' sx={{ fontWeight: '400' }}>
+              {displayDate}
+            </Typography>
           </Box>
 
           {/* Time Section */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTimeIcon color='action' />
-            <Typography variant='body1'>{displayTime}</Typography>
+            <AccessTimeIcon color='disabled' />
+            <Typography variant='body2' sx={{ fontWeight: '400' }}>
+              {displayTime}
+            </Typography>
           </Box>
         </Box>
 

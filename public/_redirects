@@ -1,5 +1,5 @@
-# Allow static assets to be served properly
+# Exclude static assets from redirect
+/assets/*    /assets/:splat   200
 /static/*    /static/:splat   200
 
-# Redirect all other routes to index.html
-/*           /index.html      200
+/*          /index.html      200
