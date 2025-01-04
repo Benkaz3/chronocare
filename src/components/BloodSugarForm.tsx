@@ -10,11 +10,13 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { BloodSugarData } from '../firebase';
 import { useHealthData } from '../context/HealthDataContext';
 import NumberAutocomplete from './NumberAutocomplete';
 import FormAlert from './FormAlert';
 import { getBloodSugarCategory } from '../data/bloodSugar';
-import LastReading from './LastReading';
+// import LastReading from './LastReading';
+import { Timestamp } from 'firebase/firestore';
 
 interface BloodSugarFormProps {
   inputBS: {
@@ -47,7 +49,7 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
   successMessage,
   setSuccessMessage,
 }) => {
-  const { addBloodSugarReading, loading, bloodSugar } = useHealthData();
+  const { addBloodSugarReading, loading } = useHealthData();
 
   // State for date-time picker using Day.js (non-nullable)
   const [selectedDateTime, setSelectedDateTime] = useState<Dayjs>(dayjs());
@@ -105,9 +107,10 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
       return;
     }
 
-    const bsData = {
+    const bsData: BloodSugarData = {
       level,
       time: selectedDateTime.toISOString(),
+      recordedAt: Timestamp.fromDate(selectedDateTime.toDate()),
     };
 
     try {
@@ -255,7 +258,7 @@ const BloodSugarForm: React.FC<BloodSugarFormProps> = ({
           errorMessage={errors.bs || errors.dateTime}
         />
 
-        <LastReading reading={bloodSugar} type='bloodSugar' />
+        {/* <LastReading reading={bloodSugar} type='bloodSugar' /> */}
       </form>
     </LocalizationProvider>
   );

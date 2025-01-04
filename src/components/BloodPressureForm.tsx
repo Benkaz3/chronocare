@@ -15,7 +15,8 @@ import { useHealthData } from '../context/HealthDataContext';
 import NumberAutocomplete from './NumberAutocomplete';
 import FormAlert from './FormAlert';
 import { getBloodPressureCategory } from '../data/bloodPressure';
-import LastReading from './LastReading';
+// import LastReading from './LastReading';
+import { Timestamp } from 'firebase/firestore';
 
 interface BloodPressureFormProps {
   inputBP: {
@@ -62,7 +63,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
   successMessage,
   setSuccessMessage,
 }) => {
-  const { addBloodPressureReading, loading, bloodPressure } = useHealthData();
+  const { addBloodPressureReading, loading } = useHealthData();
 
   // State for date-time picker using Day.js (non-nullable)
   const [selectedDateTime, setSelectedDateTime] = useState<Dayjs>(dayjs());
@@ -134,6 +135,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
       diastolic,
       pulse,
       time: selectedDateTime.toISOString(),
+      recordedAt: Timestamp.fromDate(selectedDateTime.toDate()),
     };
 
     try {
@@ -305,7 +307,7 @@ const BloodPressureForm: React.FC<BloodPressureFormProps> = ({
           successMessage={successMessage}
           errorMessage={errors.bp || errors.bpPulse || errors.dateTime}
         />
-        <LastReading reading={bloodPressure} type='bloodPressure' />
+        {/* <LastReading reading={bloodPressure} type='bloodPressure' /> */}
       </form>
     </LocalizationProvider>
   );

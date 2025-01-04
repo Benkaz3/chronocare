@@ -35,6 +35,7 @@ export interface BloodPressureData {
   diastolic: number;
   pulse: number;
   time: string;
+  recordedAt: Timestamp; // Added recordedAt field
   timestamp?: ReturnType<typeof serverTimestamp>;
 }
 
@@ -42,14 +43,26 @@ export interface BloodPressureData {
 export interface BloodSugarData {
   level: number; // Blood sugar level in mg/dL
   time: string; // Time of the reading (e.g., "08:00 AM")
+  recordedAt: Timestamp; // Added recordedAt field
   timestamp?: ReturnType<typeof serverTimestamp>; // Firestore server timestamp
+}
+
+// TypeScript interface for blood pressure data (read operations)
+interface BloodPressureDataRead {
+  systolic: number;
+  diastolic: number;
+  pulse: number;
+  time: string;
+  recordedAt: Date | null;
+  timestamp: Date | null;
 }
 
 // TypeScript interface for blood sugar data (read operations)
 interface BloodSugarDataRead {
   level: number; // Blood sugar level in mg/dL
   time: string; // Time of the reading (e.g., "08:00 AM")
-  timestamp: Date | null; // Converted Firestore Timestamp to Date
+  recordedAt: Date | null;
+  timestamp: Date | null;
 }
 
 /**
@@ -82,7 +95,7 @@ const addBloodPressureData = async (data: BloodPressureData): Promise<void> => {
 /**
  * Function to fetch blood pressure data from Firestore
  */
-const getBloodPressureData = async (): Promise<BloodPressureData[]> => {
+const getBloodPressureData = async (): Promise<BloodPressureDataRead[]> => {
   const user: User | null = auth.currentUser;
   if (!user) {
     console.error('No user is logged in');
@@ -95,8 +108,8 @@ const getBloodPressureData = async (): Promise<BloodPressureData[]> => {
   try {
     const q = query(
       collection(db, 'users', userId, 'bloodPressure'),
-      orderBy('timestamp', 'desc'),
-      limit(10)
+      orderBy('recordedAt', 'desc'),
+      limit(25)
     );
     const querySnapshot = await getDocs(q);
     console.log('Query Snapshot Size:', querySnapshot.size);
@@ -106,10 +119,19 @@ const getBloodPressureData = async (): Promise<BloodPressureData[]> => {
       return [];
     }
 
-    const data = querySnapshot.docs.map((doc) => {
+    const data: BloodPressureDataRead[] = querySnapshot.docs.map((doc) => {
       const docData = doc.data() as BloodPressureData;
       console.log('Document Data:', docData);
-      return docData;
+      return {
+        systolic: docData.systolic,
+        diastolic: docData.diastolic,
+        pulse: docData.pulse,
+        time: docData.time,
+        recordedAt: docData.recordedAt ? docData.recordedAt.toDate() : null,
+        timestamp: docData.timestamp
+          ? (docData.timestamp as Timestamp).toDate()
+          : null,
+      };
     });
 
     return data;
@@ -163,8 +185,8 @@ const getBloodSugarData = async (): Promise<BloodSugarDataRead[]> => {
   try {
     const q = query(
       collection(db, 'users', userId, 'bloodSugar'),
-      orderBy('timestamp', 'desc'),
-      limit(10) // Fetch the latest 10 records
+      orderBy('recordedAt', 'desc'),
+      limit(25) // Fetch the latest 25 records
     );
     const querySnapshot = await getDocs(q);
     console.log('Blood Sugar Query Snapshot Size:', querySnapshot.size);
@@ -180,6 +202,7 @@ const getBloodSugarData = async (): Promise<BloodSugarDataRead[]> => {
       return {
         level: docData.level,
         time: docData.time,
+        recordedAt: docData.recordedAt ? docData.recordedAt.toDate() : null,
         timestamp: docData.timestamp
           ? (docData.timestamp as Timestamp).toDate()
           : null,
@@ -205,4 +228,4 @@ export {
 };
 
 // Exporting types separately using 'export type' to comply with 'isolatedModules'
-export type { BloodSugarDataRead };
+export type { BloodPressureDataRead, BloodSugarDataRead };

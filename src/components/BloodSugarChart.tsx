@@ -33,7 +33,7 @@ const BloodSugarChart: React.FC = () => {
     }
   };
 
-  // Chuẩn bị dữ liệu cho biểu đồ: lọc theo khoảng thời gian và chuyển đổi các đọc số đường huyết thành mảng đối tượng với ngày và mức độ
+  // Chuẩn bị dữ liệu cho biểu đồ: lọc theo khoảng thời gian và sử dụng recordedAt
   const data = useMemo(() => {
     const now = dayjs();
     let filteredReadings = readings.bloodSugar.slice().reverse(); // Đảm bảo thứ tự theo thời gian
@@ -42,12 +42,16 @@ const BloodSugarChart: React.FC = () => {
       const days = parseInt(timeRange, 10);
       const cutoffDate = now.subtract(days, 'day');
       filteredReadings = filteredReadings.filter((reading) =>
-        dayjs(reading.date).isAfter(cutoffDate)
+        reading.recordedAt
+          ? dayjs(reading.recordedAt).isAfter(cutoffDate)
+          : false
       );
     }
 
     return filteredReadings.map((reading) => ({
-      date: dayjs(reading.date).format('DD/MM/YYYY'),
+      date: reading.recordedAt
+        ? dayjs(reading.recordedAt).format('DD/MM/YYYY')
+        : 'Unknown',
       level: reading.value.level,
     }));
   }, [readings.bloodSugar, timeRange]);

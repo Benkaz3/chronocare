@@ -22,6 +22,7 @@ import {
   Button,
   Tooltip,
   Grid,
+  TableHead, // Added TableHead
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -55,6 +56,7 @@ interface BloodPressureReading {
     pulse?: number;
   };
   date: string;
+  recordedAt: Date | null;
 }
 
 interface BloodSugarReading {
@@ -63,6 +65,7 @@ interface BloodSugarReading {
     level: number;
   };
   date: string;
+  recordedAt: Date | null;
 }
 
 interface ProcessedBP extends BloodPressureReading {
@@ -137,6 +140,7 @@ const renderBloodPressureRow = (
     </>
   );
 };
+// Continue of src/components/HistoryTable.tsx
 
 const renderBloodSugarRow = (
   row: ProcessedBS,
@@ -253,8 +257,9 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
     }
     const selectedDateString = selectedDate.toDateString();
     return filteredByStatus.filter((row) => {
-      const rowDate = new Date(row.date).toDateString();
-      return rowDate === selectedDateString;
+      return row.recordedAt
+        ? row.recordedAt.toDateString() === selectedDateString
+        : false;
     });
   }, [filteredByStatus, selectedDate]);
 
@@ -304,7 +309,9 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
   };
 
   const markedDates = useMemo(() => {
-    return dataWithStatus.map((row) => new Date(row.date));
+    return dataWithStatus
+      .filter((row: ProcessedBP | ProcessedBS) => row.recordedAt)
+      .map((row: ProcessedBP | ProcessedBS) => row.recordedAt as Date);
   }, [dataWithStatus]);
 
   return (
@@ -378,7 +385,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
                 onClick={handleResetFilters}
                 startIcon={<RestoreIcon />}
                 fullWidth
-                disabled={statusFilter === 'Tất cả' && !selectedDate} // Disable when no filter is applied
+                disabled={statusFilter === 'Tất cả' && !selectedDate}
                 sx={{
                   height: '100%',
                 }}
@@ -415,14 +422,30 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
         <Paper>
           <TableContainer>
             <Table aria-labelledby='tableTitle' size='medium'>
+              <TableHead>
+                <TableRow>
+                  {type === 'bloodPressure' ? (
+                    <>
+                      <TableCell align='center'>Huyết áp</TableCell>
+                      <TableCell>Trạng thái &amp; Thời gian</TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell align='center'>Đường huyết</TableCell>
+                      <TableCell>Trạng thái &amp; Thời gian</TableCell>
+                    </>
+                  )}
+                </TableRow>
+              </TableHead>
               <TableBody>
                 {paginatedData.map((row) => (
                   <TableRow hover key={row.id}>
-                    {type === 'bloodPressure' && isProcessedBP(row)
-                      ? renderBloodPressureRow(row, formatDateTime)
-                      : type === 'bloodSugar' && !isProcessedBP(row)
-                      ? renderBloodSugarRow(row, formatDateTime)
-                      : null}
+                    {type === 'bloodPressure'
+                      ? renderBloodPressureRow(
+                          row as ProcessedBP,
+                          formatDateTime
+                        )
+                      : renderBloodSugarRow(row as ProcessedBS, formatDateTime)}
                   </TableRow>
                 ))}
               </TableBody>
@@ -436,7 +459,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage=''
+            labelRowsPerPage='Trang'
             labelDisplayedRows={({ from, to, count }) =>
               `${from}-${to} trong ${count !== -1 ? count : `nhiều hơn ${to}`}`
             }

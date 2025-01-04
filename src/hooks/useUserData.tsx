@@ -11,6 +11,7 @@ type Reading = {
   id: string;
   value: any;
   date: string;
+  recordedAt: Date | null; // Added recordedAt field
 };
 
 interface Readings {
@@ -50,12 +51,14 @@ const useUserData = (): UseUserData => {
           pulse: item.pulse || 'KC', // pulse is optional
         },
         date: item.time,
+        recordedAt: item.recordedAt,
       }));
 
       const formattedBSData: Reading[] = bsData.map((item, index) => ({
         id: `bs-${index}`,
         value: { level: item.level },
         date: item.time,
+        recordedAt: item.recordedAt,
       }));
 
       setReadings({
