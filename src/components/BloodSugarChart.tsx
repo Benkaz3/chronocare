@@ -52,7 +52,7 @@ const BloodSugarChart: React.FC = () => {
       date: reading.recordedAt
         ? dayjs(reading.recordedAt).format('DD/MM/YYYY')
         : 'Unknown',
-      level: reading.value.level,
+      level: reading.level,
     }));
   }, [readings.bloodSugar, timeRange]);
 

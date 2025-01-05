@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs, Tab, Box } from '@mui/material';
 import { useState } from 'react';
-import HistoryTable from '../../components/HistoryTable';
+import HistoryTable from '../../components/HistoryTable/HistoryTable';
 
 const HistoryPage: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0);

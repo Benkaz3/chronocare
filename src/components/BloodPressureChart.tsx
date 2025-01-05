@@ -33,10 +33,10 @@ const BloodPressureChart: React.FC = () => {
     }
   };
 
-  // Chuẩn bị dữ liệu cho biểu đồ: lọc theo khoảng thời gian và sử dụng recordedAt
+  // Prepare data for the chart: filter by time range and use recordedAt
   const data = useMemo(() => {
     const now = dayjs();
-    // Đảm bảo thứ tự theo thời gian
+    // Ensure chronological order (oldest first)
     let filteredReadings = readings.bloodPressure.slice().reverse();
 
     if (timeRange !== 'all') {
@@ -53,8 +53,8 @@ const BloodPressureChart: React.FC = () => {
       date: reading.recordedAt
         ? dayjs(reading.recordedAt).format('DD/MM/YYYY')
         : 'Unknown',
-      systolic: reading.value.systolic,
-      diastolic: reading.value.diastolic,
+      systolic: reading.systolic, // **Updated Here**
+      diastolic: reading.diastolic, // **Updated Here**
     }));
   }, [readings.bloodPressure, timeRange]);
 

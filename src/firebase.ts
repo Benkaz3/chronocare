@@ -11,6 +11,8 @@ import {
   limit,
   FirestoreError,
   Timestamp,
+  updateDoc,
+  doc,
 } from 'firebase/firestore';
 
 // Firebase configuration
@@ -48,7 +50,8 @@ export interface BloodSugarData {
 }
 
 // TypeScript interface for blood pressure data (read operations)
-interface BloodPressureDataRead {
+export interface BloodPressureDataRead {
+  id: string;
   systolic: number;
   diastolic: number;
   pulse: number;
@@ -58,7 +61,8 @@ interface BloodPressureDataRead {
 }
 
 // TypeScript interface for blood sugar data (read operations)
-interface BloodSugarDataRead {
+export interface BloodSugarDataRead {
+  id: string;
   level: number; // Blood sugar level in mg/dL
   time: string; // Time of the reading (e.g., "08:00 AM")
   recordedAt: Date | null;
@@ -123,6 +127,7 @@ const getBloodPressureData = async (): Promise<BloodPressureDataRead[]> => {
       const docData = doc.data() as BloodPressureData;
       console.log('Document Data:', docData);
       return {
+        id: doc.id,
         systolic: docData.systolic,
         diastolic: docData.diastolic,
         pulse: docData.pulse,
@@ -200,6 +205,7 @@ const getBloodSugarData = async (): Promise<BloodSugarDataRead[]> => {
       const docData = doc.data() as BloodSugarData;
       console.log('Blood Sugar Document Data:', docData);
       return {
+        id: doc.id,
         level: docData.level,
         time: docData.time,
         recordedAt: docData.recordedAt ? docData.recordedAt.toDate() : null,
@@ -217,6 +223,58 @@ const getBloodSugarData = async (): Promise<BloodSugarDataRead[]> => {
   }
 };
 
+/**
+ * Function to update blood pressure data in Firestore
+ */
+const updateBloodPressureData = async (
+  docId: string,
+  data: Partial<BloodPressureData>
+): Promise<void> => {
+  const user: User | null = auth.currentUser; // Get the currently authenticated user
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const userId = user.uid; // User's unique ID
+
+  try {
+    const docRef = doc(db, 'users', userId, 'bloodPressure', docId);
+    await updateDoc(docRef, { ...data, timestamp: serverTimestamp() });
+    console.log('Document updated with ID: ', docRef.id);
+  } catch (e) {
+    const error = e as FirestoreError;
+    console.error('Error updating document: ', error.message);
+    throw new Error('Error updating document');
+  }
+};
+
+/**
+ * Function to update blood sugar data in Firestore
+ */
+const updateBloodSugarData = async (
+  docId: string,
+  data: Partial<BloodSugarData>
+): Promise<void> => {
+  const user: User | null = auth.currentUser; // Get the currently authenticated user
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const userId = user.uid; // User's unique ID
+
+  try {
+    const docRef = doc(db, 'users', userId, 'bloodSugar', docId);
+    await updateDoc(docRef, { ...data, timestamp: serverTimestamp() });
+    console.log('Blood Sugar Document updated with ID: ', docRef.id);
+  } catch (e) {
+    const error = e as FirestoreError;
+    console.error('Error updating Blood Sugar document: ', error.message);
+    throw new Error('Error updating Blood Sugar document');
+  }
+};
+
 // Exporting functions and types
 export {
   auth,
@@ -225,7 +283,6 @@ export {
   getBloodPressureData,
   addBloodSugarData,
   getBloodSugarData,
+  updateBloodPressureData,
+  updateBloodSugarData,
 };
-
-// Exporting types separately using 'export type' to comply with 'isolatedModules'
-export type { BloodPressureDataRead, BloodSugarDataRead };

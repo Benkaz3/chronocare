@@ -4,19 +4,19 @@ import {
   addBloodSugarData,
   getBloodPressureData,
   getBloodSugarData,
+  updateBloodPressureData,
+  updateBloodSugarData,
+  BloodPressureData,
+  BloodSugarData,
+  BloodPressureDataRead,
+  BloodSugarDataRead,
 } from '../firebase';
-import { BloodPressureData, BloodSugarData } from '../firebase';
 
-type Reading = {
-  id: string;
-  value: any;
-  date: string;
-  recordedAt: Date | null; // Added recordedAt field
-};
+/* Removed the generic Reading type and using specific types instead */
 
 interface Readings {
-  bloodPressure: Reading[];
-  bloodSugar: Reading[];
+  bloodPressure: BloodPressureDataRead[];
+  bloodSugar: BloodSugarDataRead[];
 }
 
 interface UseUserData {
@@ -25,6 +25,11 @@ interface UseUserData {
   error: string | null;
   fetchReadings: () => void;
   addReading: (type: 'bloodPressure' | 'bloodSugar', data: any) => void;
+  updateReading: (
+    type: 'bloodPressure' | 'bloodSugar',
+    docId: string,
+    data: any
+  ) => void;
 }
 
 const useUserData = (): UseUserData => {
@@ -43,27 +48,9 @@ const useUserData = (): UseUserData => {
       const bpData = await getBloodPressureData();
       const bsData = await getBloodSugarData();
 
-      const formattedBPData: Reading[] = bpData.map((item, index) => ({
-        id: `bp-${index}`,
-        value: {
-          systolic: item.systolic,
-          diastolic: item.diastolic,
-          pulse: item.pulse || 'KC', // pulse is optional
-        },
-        date: item.time,
-        recordedAt: item.recordedAt,
-      }));
-
-      const formattedBSData: Reading[] = bsData.map((item, index) => ({
-        id: `bs-${index}`,
-        value: { level: item.level },
-        date: item.time,
-        recordedAt: item.recordedAt,
-      }));
-
       setReadings({
-        bloodPressure: formattedBPData,
-        bloodSugar: formattedBSData,
+        bloodPressure: bpData,
+        bloodSugar: bsData,
       });
     } catch (err: any) {
       console.error('Error fetching readings:', err);
@@ -98,12 +85,38 @@ const useUserData = (): UseUserData => {
     [fetchReadings]
   );
 
+  // Update an existing reading in Firestore
+  const updateReading = useCallback(
+    async (type: 'bloodPressure' | 'bloodSugar', docId: string, data: any) => {
+      setLoading(true);
+      setError(null);
+      try {
+        if (type === 'bloodPressure') {
+          await updateBloodPressureData(
+            docId,
+            data as Partial<BloodPressureData>
+          );
+        } else if (type === 'bloodSugar') {
+          await updateBloodSugarData(docId, data as Partial<BloodSugarData>);
+        }
+        // After updating, fetch the updated list
+        await fetchReadings();
+      } catch (err: any) {
+        console.error(`Error updating ${type} reading:`, err);
+        setError(`Failed to update ${type} reading.`);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchReadings]
+  );
+
   // Optionally, fetch readings on hook mount
   useEffect(() => {
     fetchReadings();
   }, [fetchReadings]);
 
-  return { readings, loading, error, fetchReadings, addReading };
+  return { readings, loading, error, fetchReadings, addReading, updateReading };
 };
 
 export default useUserData;
