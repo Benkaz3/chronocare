@@ -22,7 +22,6 @@ import {
   Button,
   Tooltip,
   Grid,
-  TableHead, // Added TableHead
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -422,21 +421,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
         <Paper>
           <TableContainer>
             <Table aria-labelledby='tableTitle' size='medium'>
-              <TableHead>
-                <TableRow>
-                  {type === 'bloodPressure' ? (
-                    <>
-                      <TableCell align='center'>Huyết áp</TableCell>
-                      <TableCell>Trạng thái &amp; Thời gian</TableCell>
-                    </>
-                  ) : (
-                    <>
-                      <TableCell align='center'>Đường huyết</TableCell>
-                      <TableCell>Trạng thái &amp; Thời gian</TableCell>
-                    </>
-                  )}
-                </TableRow>
-              </TableHead>
               <TableBody>
                 {paginatedData.map((row) => (
                   <TableRow hover key={row.id}>
