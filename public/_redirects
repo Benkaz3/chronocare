@@ -1,5 +1,4 @@
 # Exclude static assets from redirect
 /assets/*    /assets/:splat   200
-/static/*    /static/:splat   200
 
 /*          /index.html      200
