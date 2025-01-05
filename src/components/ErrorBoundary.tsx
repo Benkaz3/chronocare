@@ -1,3 +1,5 @@
+// src/components/ErrorBoundary.tsx
+
 import { Component, ReactNode, ErrorInfo } from 'react';
 import { Typography, Button, Box } from '@mui/material';
 
@@ -17,6 +19,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Update state so the next render shows the fallback UI.
     return { hasError: true, error };
   }
 
@@ -39,13 +42,13 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           height='100vh'
           textAlign='center'
           padding={2}
-          bgcolor='#f5f5f5' // Optional: Background color for better visibility
+          bgcolor='#f5f5f5'
         >
           <Typography variant='h4' gutterBottom color='error'>
             Bị lỗi òi! Có gì đó sai sai!
           </Typography>
           <Typography variant='body1' gutterBottom>
-            Bị lỗi òi! Thử tải lại coi sao...
+            Thử tải lại coi sao...
           </Typography>
           <Button
             variant='contained'
