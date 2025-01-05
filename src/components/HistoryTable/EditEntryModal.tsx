@@ -9,6 +9,8 @@ import {
   Button,
   TextField,
   Grid,
+  Box,
+  Typography,
 } from '@mui/material';
 import {
   ProcessedBP,
@@ -16,6 +18,23 @@ import {
   BloodPressureData,
   BloodSugarData,
 } from '../../types';
+import LinearGauge from '../LinearGauge';
+
+import {
+  bloodPressureSegments,
+  getBloodPressureCategory,
+  mapBloodPressureCategoryToGaugeValue,
+  getBloodPressureStatusInfo,
+  getBloodPressureAlertSeverity,
+} from '../../data/bloodPressure';
+
+import {
+  bloodSugarSegments,
+  getBloodSugarCategory,
+  mapBloodSugarCategoryToGaugeValue,
+  getBloodSugarStatusInfo,
+  getBloodSugarAlertSeverity,
+} from '../../data/bloodSugar';
 
 interface EditEntryModalProps {
   open: boolean;
@@ -30,6 +49,14 @@ const isProcessedBP = (
 ): entry is ProcessedBP => {
   return 'systolic' in entry;
 };
+
+interface StatusInfo {
+  status: string;
+  explanation: string;
+  action?: string; // Made optional if not always present
+  color: string;
+  severity: 'success' | 'info' | 'warning' | 'error';
+}
 
 const EditEntryModal: React.FC<EditEntryModalProps> = ({
   open,
@@ -49,6 +76,9 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
     Partial<Record<keyof BloodSugarData, string>>
   >({});
 
+  // Status Information
+  const [statusInfo, setStatusInfo] = useState<StatusInfo | null>(null);
+
   // Initialize form data when entry changes or modal opens
   useEffect(() => {
     if (entry) {
@@ -62,38 +92,131 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
           timestamp: entry.timestamp,
         });
         setBpErrors({});
+        // Determine Status Info
+        const category = getBloodPressureCategory(
+          entry.systolic,
+          entry.diastolic
+        );
+        const info = getBloodPressureStatusInfo(category);
+
+        // Ensure 'info' is not null before setting
+        if (info) {
+          const severity = getBloodPressureAlertSeverity(info.status);
+          setStatusInfo({
+            status: info.status,
+            explanation: info.explanation,
+            action: info.action, // Optional property
+            color: info.color,
+            severity,
+          });
+        } else {
+          setStatusInfo(null);
+        }
       } else {
+        const bsEntry = entry as ProcessedBS;
         setBsFormData({
-          level: entry.level,
-          time: entry.time,
-          recordedAt: entry.recordedAt,
-          timestamp: entry.timestamp,
+          level: bsEntry.level,
+          time: bsEntry.time,
+          recordedAt: bsEntry.recordedAt,
+          timestamp: bsEntry.timestamp,
         });
         setBsErrors({});
+        // Determine Status Info
+        const category = getBloodSugarCategory(bsEntry.level);
+        const info = getBloodSugarStatusInfo(category);
+
+        // Ensure 'info' is not null before setting
+        if (info) {
+          const severity = getBloodSugarAlertSeverity(info.status);
+          setStatusInfo({
+            status: info.status,
+            explanation: info.explanation,
+            action: info.action, // Optional property
+            color: info.color,
+            severity,
+          });
+        } else {
+          setStatusInfo(null);
+        }
       }
     }
   }, [entry, open]);
 
+  // Update statusInfo dynamically as form data changes
+  useEffect(() => {
+    if (isProcessedBP(entry)) {
+      const systolic = bpFormData.systolic ?? entry.systolic;
+      const diastolic = bpFormData.diastolic ?? entry.diastolic;
+      const category = getBloodPressureCategory(systolic, diastolic);
+      const info = getBloodPressureStatusInfo(category);
+
+      // Ensure 'info' is not null before setting
+      if (info) {
+        const severity = getBloodPressureAlertSeverity(info.status);
+        setStatusInfo({
+          status: info.status,
+          explanation: info.explanation,
+          action: info.action, // Optional property
+          color: info.color,
+          severity,
+        });
+      } else {
+        setStatusInfo(null);
+      }
+    } else {
+      const bsEntry = entry as ProcessedBS;
+      const level = bsFormData.level ?? bsEntry.level;
+      const category = getBloodSugarCategory(level);
+      const info = getBloodSugarStatusInfo(category);
+
+      // Ensure 'info' is not null before setting
+      if (info) {
+        const severity = getBloodSugarAlertSeverity(info.status);
+        setStatusInfo({
+          status: info.status,
+          explanation: info.explanation,
+          action: info.action, // Optional property
+          color: info.color,
+          severity,
+        });
+      } else {
+        setStatusInfo(null);
+      }
+    }
+  }, [
+    bpFormData.systolic,
+    bpFormData.diastolic,
+    bpFormData.pulse,
+    bsFormData.level,
+    entry,
+  ]);
+
   // Handle input changes for Blood Pressure
   const handleBpChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const numericFields = ['systolic', 'diastolic', 'pulse'];
+    const numericFields = ['systolic', 'diastolic', 'pulse'] as const;
 
-    setBpFormData((prev) => ({
-      ...prev,
-      [name]: numericFields.includes(name) ? Number(value) : value,
-    }));
+    if (numericFields.includes(name as (typeof numericFields)[number])) {
+      const newValue = value === '' ? undefined : Number(value);
+      setBpFormData((prev) => ({
+        ...prev,
+        [name]: newValue,
+      }));
+    }
   };
 
   // Handle input changes for Blood Sugar
   const handleBsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const numericFields = ['level'];
+    const numericFields = ['level'] as const;
 
-    setBsFormData((prev) => ({
-      ...prev,
-      [name]: numericFields.includes(name) ? Number(value) : value,
-    }));
+    if (numericFields.includes(name as (typeof numericFields)[number])) {
+      const newValue = value === '' ? undefined : Number(value);
+      setBsFormData((prev) => ({
+        ...prev,
+        [name]: newValue,
+      }));
+    }
   };
 
   // Validation for Blood Pressure form
@@ -134,29 +257,39 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
     if (isProcessedBP(entry)) {
       if (!validateBP()) return;
 
-      const updatedEntry: ProcessedBP = {
-        ...entry,
-        systolic: bpFormData.systolic!,
-        diastolic: bpFormData.diastolic!,
-        pulse: bpFormData.pulse ?? entry.pulse,
-        time: bpFormData.time ?? entry.time,
-        recordedAt: bpFormData.recordedAt ?? entry.recordedAt,
-        timestamp: bpFormData.timestamp ?? entry.timestamp,
-      };
+      // Ensure all required fields are present before saving
+      if (
+        bpFormData.systolic !== undefined &&
+        bpFormData.diastolic !== undefined
+      ) {
+        const updatedEntry: ProcessedBP = {
+          ...entry,
+          systolic: bpFormData.systolic,
+          diastolic: bpFormData.diastolic,
+          pulse: bpFormData.pulse ?? entry.pulse,
+          time: bpFormData.time ?? entry.time,
+          recordedAt: bpFormData.recordedAt ?? entry.recordedAt,
+          timestamp: bpFormData.timestamp ?? entry.timestamp,
+        };
 
-      onSave(updatedEntry);
+        onSave(updatedEntry);
+      }
     } else {
+      const bsEntry = entry as ProcessedBS;
       if (!validateBS()) return;
 
-      const updatedEntry: ProcessedBS = {
-        ...entry,
-        level: bsFormData.level!,
-        time: bsFormData.time ?? entry.time,
-        recordedAt: bsFormData.recordedAt ?? entry.recordedAt,
-        timestamp: bsFormData.timestamp ?? entry.timestamp,
-      };
+      // Ensure all required fields are present before saving
+      if (bsFormData.level !== undefined) {
+        const updatedEntry: ProcessedBS = {
+          ...bsEntry,
+          level: bsFormData.level,
+          time: bsFormData.time ?? bsEntry.time,
+          recordedAt: bsFormData.recordedAt ?? bsEntry.recordedAt,
+          timestamp: bsFormData.timestamp ?? bsEntry.timestamp,
+        };
 
-      onSave(updatedEntry);
+        onSave(updatedEntry);
+      }
     }
     onClose();
   };
@@ -165,6 +298,36 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
   const handleClose = () => {
     onClose();
   };
+
+  // Helper functions to map values to gauge positions
+  const getBPGaugeValue = (): number => {
+    if (isProcessedBP(entry)) {
+      const systolic = bpFormData.systolic ?? entry.systolic;
+      const diastolic = bpFormData.diastolic ?? entry.diastolic;
+      const category = getBloodPressureCategory(systolic, diastolic);
+      return mapBloodPressureCategoryToGaugeValue(category);
+    }
+    return 0;
+  };
+
+  const getBSGaugeValue = (): number => {
+    if (!isProcessedBP(entry)) {
+      const bsEntry = entry as ProcessedBS;
+      const level = bsFormData.level ?? bsEntry.level;
+      const category = getBloodSugarCategory(level);
+      return mapBloodSugarCategoryToGaugeValue(category);
+    }
+    return 0;
+  };
+
+  // Determine if current state is invalid
+  const isInvalid =
+    (isProcessedBP(entry) &&
+      (statusInfo?.status === 'Invalid' ||
+        statusInfo?.status === 'Bạn chưa nhập dữ liệu huyết áp')) ||
+    (!isProcessedBP(entry) &&
+      (statusInfo?.status === 'Invalid' ||
+        statusInfo?.status === 'Bạn chưa nhập dữ liệu đường huyết'));
 
   return (
     <Dialog
@@ -178,7 +341,40 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
         Sửa chỉ số {isProcessedBP(entry) ? 'Huyết Áp' : 'Đường Huyết'}
       </DialogTitle>
       <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
+        {/* Gauge Section */}
+        <Box sx={{ mb: 3 }}>
+          <LinearGauge
+            segments={
+              isProcessedBP(entry) ? bloodPressureSegments : bloodSugarSegments
+            }
+            currentValue={
+              isProcessedBP(entry) ? getBPGaugeValue() : getBSGaugeValue()
+            }
+            isBlurred={isInvalid}
+          />
+        </Box>
+
+        {/* Status Information */}
+        {statusInfo &&
+          statusInfo.status !== 'Bạn chưa nhập dữ liệu huyết áp' &&
+          statusInfo.status !== 'Bạn chưa nhập dữ liệu đường huyết' && (
+            <Box
+              sx={{
+                mb: 3,
+                p: 2,
+                borderRadius: 1,
+                backgroundColor: `${statusInfo.color}20`, // Adding transparency
+                border: `1px solid ${statusInfo.color}`,
+              }}
+            >
+              <Typography variant='h6' color={statusInfo.color}>
+                {statusInfo.status}
+              </Typography>
+            </Box>
+          )}
+
+        {/* Form Fields */}
+        <Grid container spacing={2}>
           {isProcessedBP(entry) ? (
             <>
               <Grid item xs={6}>
@@ -186,7 +382,9 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
                   label='Systolic (mmHg)'
                   name='systolic'
                   type='number'
-                  value={bpFormData.systolic ?? ''}
+                  value={
+                    bpFormData.systolic !== undefined ? bpFormData.systolic : ''
+                  }
                   onChange={handleBpChange}
                   fullWidth
                   required
@@ -200,7 +398,11 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
                   label='Diastolic (mmHg)'
                   name='diastolic'
                   type='number'
-                  value={bpFormData.diastolic ?? ''}
+                  value={
+                    bpFormData.diastolic !== undefined
+                      ? bpFormData.diastolic
+                      : ''
+                  }
                   onChange={handleBpChange}
                   fullWidth
                   required
@@ -214,7 +416,7 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
                   label='Nhịp tim (bpm)'
                   name='pulse'
                   type='number'
-                  value={bpFormData.pulse ?? ''}
+                  value={bpFormData.pulse !== undefined ? bpFormData.pulse : ''}
                   onChange={handleBpChange}
                   fullWidth
                   error={!!bpErrors.pulse}
@@ -229,7 +431,7 @@ const EditEntryModal: React.FC<EditEntryModalProps> = ({
                 label='Đường huyết (mg/dL)'
                 name='level'
                 type='number'
-                value={bsFormData.level ?? ''}
+                value={bsFormData.level !== undefined ? bsFormData.level : ''}
                 onChange={handleBsChange}
                 fullWidth
                 required
