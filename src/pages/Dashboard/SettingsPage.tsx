@@ -157,8 +157,18 @@ const SettingsPage: React.FC = () => {
 
     try {
       const dataToDownload = {
-        bloodPressure: readings.bloodPressure,
-        bloodSugar: readings.bloodSugar,
+        bloodPressure: readings.bloodPressure.map((bp) => ({
+          recordedAt: bp.recordedAt,
+          time: bp.time,
+          systolic: bp.systolic,
+          diastolic: bp.diastolic,
+          pulse: bp.pulse,
+        })),
+        bloodSugar: readings.bloodSugar.map((bs) => ({
+          recordedAt: bs.recordedAt,
+          time: bs.time,
+          level: bs.level,
+        })),
       };
       await downloadJSON(
         dataToDownload,
@@ -186,8 +196,15 @@ const SettingsPage: React.FC = () => {
     setGlobalError(null);
 
     try {
+      const formattedData = readings.bloodPressure.map((bp) => ({
+        recordedAt: bp.recordedAt,
+        time: bp.time,
+        systolic: bp.systolic,
+        diastolic: bp.diastolic,
+        pulse: bp.pulse,
+      }));
       await downloadBloodPressureCSV(
-        readings.bloodPressure,
+        formattedData,
         `du_lieu_huyet_ap_${userNameOrEmail}.csv`
       );
       showSnackbar('Tải xuống CSV huyết áp thành công!', 'success');
@@ -212,8 +229,13 @@ const SettingsPage: React.FC = () => {
     setGlobalError(null);
 
     try {
+      const formattedData = readings.bloodSugar.map((bs) => ({
+        recordedAt: bs.recordedAt,
+        time: bs.time,
+        level: bs.level,
+      }));
       await downloadBloodSugarCSV(
-        readings.bloodSugar,
+        formattedData,
         `du_lieu_duong_mau_${userNameOrEmail}.csv`
       );
       showSnackbar('Tải xuống CSV đường máu thành công!', 'success');
@@ -242,8 +264,18 @@ const SettingsPage: React.FC = () => {
 
     try {
       const dataToDownload = {
-        bloodPressure: readings.bloodPressure,
-        bloodSugar: readings.bloodSugar,
+        bloodPressure: readings.bloodPressure.map((bp) => ({
+          recordedAt: bp.recordedAt,
+          time: bp.time,
+          systolic: bp.systolic,
+          diastolic: bp.diastolic,
+          pulse: bp.pulse,
+        })),
+        bloodSugar: readings.bloodSugar.map((bs) => ({
+          recordedAt: bs.recordedAt,
+          time: bs.time,
+          level: bs.level,
+        })),
       };
       await downloadPDF(
         dataToDownload,
@@ -388,9 +420,10 @@ const SettingsPage: React.FC = () => {
                   variant='outlined'
                   size='small'
                   fullWidth
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSaveClick();
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveClick();
+                    }
                   }}
                 />
               ) : (

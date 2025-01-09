@@ -1,5 +1,3 @@
-// src/components/HistoryTable/Filters.tsx
-
 import React from 'react';
 import {
   Box,
@@ -36,7 +34,7 @@ const Filters: React.FC<FiltersProps> = ({
     <Box mb={3}>
       <Grid container spacing={2} alignItems='center'>
         {/* Status Filter */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <FormControl
             variant='outlined'
             size='small'
@@ -63,7 +61,7 @@ const Filters: React.FC<FiltersProps> = ({
         </Grid>
 
         {/* Calendar Button */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={3} lg={3}>
           <Tooltip title='Chọn ngày'>
             <IconButton
               color='primary'
@@ -98,7 +96,7 @@ const Filters: React.FC<FiltersProps> = ({
         </Grid>
 
         {/* Reset Filters Button */}
-        <Grid item xs={12} sm={12} md={2}>
+        <Grid item xs={12} sm={12} md={2} lg={2}>
           <Tooltip title='Bỏ lọc'>
             <Button
               variant='outlined'

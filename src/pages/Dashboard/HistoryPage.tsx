@@ -11,11 +11,12 @@ const HistoryPage: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', maxWidth: 600, mx: 'auto', p: 2 }}>
       <Tabs
         value={tabIndex}
         onChange={handleTabChange}
         aria-label='History Tabs'
+        variant='fullWidth'
       >
         <Tab label='Huyết Áp' />
         <Tab label='Đường Huyết' />

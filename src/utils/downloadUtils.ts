@@ -1,10 +1,10 @@
 // src/utils/downloadUtils.ts
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import vietnameseFont from './vietnameseFontBase64'; // Ensure this is the correct path
+import vietnameseFont from './vietnameseFontBase64';
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
+const formatDate = (date: Date | null, time: string): string => {
+  if (!date) return time || 'Unknown Time';
   return (
     date.toLocaleDateString('vi-VN') +
     ' ' +
@@ -37,7 +37,8 @@ const convertArrayOfObjectsToCSV = (
 
   array.forEach((obj) => {
     const row = headers.map((header) => {
-      const val = obj[header] !== undefined ? obj[header] : '';
+      const key = header;
+      const val = obj[key] !== undefined ? obj[key] : '';
       const escaped = `${val}`.replace(/"/g, '""');
       return `"${escaped}"`;
     });
@@ -74,10 +75,10 @@ export const downloadPDF = (
     'Nhịp tim',
   ];
   const bloodPressureRows = data.bloodPressure.map((item: any) => [
-    formatDate(item.date),
-    item.value.systolic,
-    item.value.diastolic,
-    item.value.pulse,
+    formatDate(item.recordedAt, item.time),
+    item.systolic,
+    item.diastolic,
+    item.pulse,
   ]);
 
   doc.autoTable({
@@ -112,8 +113,8 @@ export const downloadPDF = (
 
   const bloodSugarHeaders = ['Ngày', 'Mức Đường Máu'];
   const bloodSugarRows = data.bloodSugar.map((item: any) => [
-    formatDate(item.date),
-    item.value.level,
+    formatDate(item.recordedAt, item.time),
+    item.level,
   ]);
 
   doc.autoTable({
@@ -156,13 +157,13 @@ export const downloadBloodPressureCSV = (data: any[], filename: string) => {
     'Nhịp tim',
   ];
   const formattedData = data.map((item) => ({
-    Ngày: formatDate(item.date),
-    'Huyết áp tâm thu': item.value.systolic,
-    'Huyết áp tâm trương': item.value.diastolic,
-    'Nhịp tim': item.value.pulse,
+    Ngày: formatDate(item.recordedAt, item.time),
+    'Huyết áp tâm thu': item.systolic,
+    'Huyết áp tâm trương': item.diastolic,
+    'Nhịp tim': item.pulse,
   }));
   const csv = convertArrayOfObjectsToCSV(formattedData, headers);
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement('a');
@@ -184,11 +185,11 @@ export const downloadBloodSugarCSV = (data: any[], filename: string) => {
 
   const headers = ['Ngày', 'Mức Đường Máu'];
   const formattedData = data.map((item) => ({
-    Ngày: formatDate(item.date),
-    'Mức Đường Máu': item.value.level,
+    Ngày: formatDate(item.recordedAt, item.time),
+    'Mức Đường Máu': item.level,
   }));
   const csv = convertArrayOfObjectsToCSV(formattedData, headers);
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement('a');
