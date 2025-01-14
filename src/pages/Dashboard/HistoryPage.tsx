@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs, Tab, Box, Paper } from '@mui/material';
+import { Tabs, Tab, Box } from '@mui/material';
 import { useState } from 'react';
 import HistoryTable from '../../components/HistoryTable/HistoryTable';
 

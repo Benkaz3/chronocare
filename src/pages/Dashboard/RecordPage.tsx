@@ -1,6 +1,6 @@
 import React from 'react';
 import RecordForm from '../../components/RecordForm';
-import { Box, Paper } from '@mui/material';
+import { Paper } from '@mui/material';
 
 const RecordPage: React.FC = () => {
   return (
