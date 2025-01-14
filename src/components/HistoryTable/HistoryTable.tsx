@@ -6,7 +6,6 @@ import {
   TableBody,
   TableContainer,
   TableRow,
-  Paper,
   Typography,
   Box,
 } from '@mui/material';
@@ -272,7 +271,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
           selectedDate={selectedDate}
         />
       ) : (
-        <Paper>
+        <Box>
           <TableContainer>
             <Table aria-labelledby='tableTitle' size='medium'>
               <TableBody>
@@ -309,7 +308,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ type, title }) => {
               setPage(0);
             }}
           />
-        </Paper>
+        </Box>
       )}
 
       {/* Calendar Modal */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs, Tab, Box } from '@mui/material';
+import { Tabs, Tab, Box, Paper } from '@mui/material';
 import { useState } from 'react';
 import HistoryTable from '../../components/HistoryTable/HistoryTable';
 
@@ -11,7 +11,13 @@ const HistoryPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 600, mx: 'auto', p: 2 }}>
+    // <Paper
+    //   elevation={2}
+    //   sx={{ width: '100%', maxWidth: 600, mx: 'auto', p: 2, height: '100vh' }}
+    // >
+    <Box
+      sx={{ width: '100%', maxWidth: 600, mx: 'auto', p: 2, height: '100vh' }}
+    >
       <Tabs
         value={tabIndex}
         onChange={handleTabChange}
@@ -26,6 +32,8 @@ const HistoryPage: React.FC = () => {
         {tabIndex === 1 && <HistoryTable type='bloodSugar' title='' />}
       </Box>
     </Box>
+
+    // </Paper>
   );
 };
 

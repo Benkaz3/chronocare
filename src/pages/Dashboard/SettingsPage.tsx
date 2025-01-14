@@ -15,6 +15,7 @@ import {
   Stack,
   useMediaQuery,
   useTheme,
+  Paper,
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import EditIcon from '@mui/icons-material/Edit';
@@ -358,312 +359,318 @@ const SettingsPage: React.FC = () => {
   }
 
   return (
-    <Box
-      p={2}
-      sx={{
-        backgroundColor: 'background.default',
-        borderRadius: 2,
-        maxWidth: { xs: '100%', sm: 600 },
-        width: '100%',
-        margin: '0 auto',
-        // boxShadow: 1,
-        height: '100vh', // Full viewport height
-        overflowY: 'auto', // Enable vertical scrolling
-      }}
+    <Paper
+      elevation={2}
+      sx={{ width: '100%', maxWidth: 600, mx: 'auto', p: 2, height: '100vh' }}
     >
-      <Typography
-        variant={isSmallScreen ? 'h5' : 'h4'}
-        gutterBottom
-        align='center'
-        sx={{ color: 'text.primary' }}
+      <Box
+        p={2}
+        sx={{
+          backgroundColor: 'background.default',
+          borderRadius: 2,
+          maxWidth: { xs: '100%', sm: 600 },
+          width: '100%',
+          margin: '0 auto',
+          height: '100vh',
+          overflowY: 'auto',
+        }}
       >
-        Cài Đặt
-      </Typography>
-
-      {/* Global Error Alert */}
-      {globalError && (
-        <Alert severity='error' sx={{ mb: 2 }}>
-          {globalError}
-        </Alert>
-      )}
-
-      {/* Data Error Alert */}
-      {dataError && (
-        <Alert severity='warning' sx={{ mb: 2 }}>
-          {dataError} Vui lòng kiểm tra kết nối của bạn hoặc thử lại sau.
-        </Alert>
-      )}
-
-      {/* Update Error Alert */}
-      {updateError && (
-        <Alert severity='error' sx={{ mb: 2 }}>
-          {updateError}
-        </Alert>
-      )}
-
-      <Stack spacing={3} mb={4}>
-        {/* Personal Information Section */}
-        <Box>
-          <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
-            Thông tin cá nhân
-          </Typography>
-          <Divider />
-
-          <Stack spacing={2} mt={2}>
-            {/* Display Name */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {isEditing ? (
-                <TextField
-                  label='Tên'
-                  value={newDisplayName}
-                  onChange={(e) => setNewDisplayName(e.target.value)}
-                  variant='outlined'
-                  size='small'
-                  fullWidth
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveClick();
-                    }
-                  }}
-                />
-              ) : (
-                <Typography
-                  variant='body1'
-                  sx={{ color: 'text.primary', flexGrow: 1 }}
-                >
-                  <strong>Tên: </strong>
-                  {user.displayName}
-                </Typography>
-              )}
-              {!isEditing && (
-                <IconButton
-                  aria-label='edit'
-                  onClick={handleEditClick}
-                  sx={{ ml: 1 }}
-                >
-                  <EditIcon />
-                </IconButton>
-              )}
-            </Box>
-
-            {/* Name Editing Actions */}
-            {isEditing && (
-              <Stack direction='row' spacing={2} mt={1}>
-                <Button
-                  variant='contained'
-                  color='primary'
-                  startIcon={<SaveIcon />}
-                  onClick={handleSaveClick}
-                  disabled={isUpdating}
-                  sx={{
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    minWidth: 100,
-                    minHeight: 48, // Touch-friendly size
-                  }}
-                >
-                  {isUpdating ? (
-                    <CircularProgress size={24} color='inherit' />
-                  ) : (
-                    'Lưu'
-                  )}
-                </Button>
-                <Button
-                  variant='outlined'
-                  color='secondary'
-                  onClick={() => setIsEditing(false)}
-                  sx={{
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    minWidth: 100,
-                    minHeight: 48, // Touch-friendly size
-                  }}
-                  disabled={isUpdating}
-                >
-                  Hủy
-                </Button>
-              </Stack>
-            )}
-
-            {/* Email */}
-            <Typography variant='body1' sx={{ color: 'text.primary' }}>
-              <strong>Email: </strong>
-              {user.email}
-            </Typography>
-
-            {/* Logout Button */}
-            <Button
-              variant='outlined'
-              color='secondary'
-              fullWidth
-              onClick={handleLogout}
-              disabled={authLoading}
-              sx={{
-                textTransform: 'none',
-                borderRadius: 2,
-                minHeight: 48, // Touch-friendly size
-                '&:hover': {
-                  backgroundColor: 'secondary.main',
-                  color: 'white',
-                },
-              }}
-            >
-              {authLoading ? <CircularProgress size={24} /> : 'Đăng Xuất'}
-            </Button>
-          </Stack>
-        </Box>
-
-        {/* Data Download Section */}
-        <Box>
-          <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
-            Tải xuống dữ liệu
-          </Typography>
-          <Divider />
-
-          <Stack spacing={2} mt={2}>
-            {/* Prominent PDF Download Button */}
-            <Button
-              variant='contained'
-              color='primary'
-              startIcon={<DownloadIcon />}
-              onClick={handleDownloadPDFData}
-              fullWidth
-              disabled={isDownloadingPDF}
-              sx={{
-                textTransform: 'none',
-                borderRadius: 2,
-                minHeight: 48, // Touch-friendly size
-                fontSize: '1rem',
-                '&:hover': {
-                  backgroundColor: 'primary.dark',
-                },
-              }}
-            >
-              {isDownloadingPDF ? (
-                <CircularProgress color='inherit' size={24} />
-              ) : (
-                'Tải Dữ Liệu (PDF)'
-              )}
-            </Button>
-
-            {/* Lazy Loaded Accordion for Other Download Options */}
-            <Suspense
-              fallback={
-                <Box display='flex' justifyContent='center' mt={2}>
-                  <CircularProgress size={24} />
-                </Box>
-              }
-            >
-              <Accordion>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls='additional-downloads-content'
-                  id='additional-downloads-header'
-                >
-                  <Typography sx={{ color: 'text.secondary' }}>
-                    Thêm Tùy Chọn Tải Xuống
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Stack spacing={2}>
-                    {/* JSON Download */}
-                    <Button
-                      variant='outlined'
-                      color='secondary'
-                      onClick={handleDownloadJSONData}
-                      startIcon={<DownloadIcon />}
-                      fullWidth
-                      disabled={isDownloadingJSON}
-                      sx={{
-                        textTransform: 'none',
-                        borderRadius: 2,
-                        minHeight: 48, // Touch-friendly size
-                        '&:hover': {
-                          backgroundColor: 'secondary.main',
-                          color: 'white',
-                        },
-                      }}
-                    >
-                      {isDownloadingJSON ? (
-                        <CircularProgress color='inherit' size={24} />
-                      ) : (
-                        'Tải Dữ Liệu (JSON)'
-                      )}
-                    </Button>
-
-                    {/* CSV Downloads */}
-                    <Typography variant='subtitle1'>Tải Dữ Liệu CSV</Typography>
-                    <Stack spacing={2}>
-                      <Button
-                        variant='outlined'
-                        color='primary'
-                        onClick={handleDownloadBloodPressureCSVData}
-                        startIcon={<DownloadIcon />}
-                        fullWidth
-                        disabled={isDownloadingBPCSV}
-                        sx={{
-                          textTransform: 'none',
-                          borderRadius: 2,
-                          minHeight: 48, // Touch-friendly size
-                          '&:hover': {
-                            backgroundColor: 'primary.light',
-                          },
-                        }}
-                      >
-                        {isDownloadingBPCSV ? (
-                          <CircularProgress color='inherit' size={24} />
-                        ) : (
-                          'Dữ Liệu Huyết Áp'
-                        )}
-                      </Button>
-
-                      <Button
-                        variant='outlined'
-                        color='primary'
-                        onClick={handleDownloadBloodSugarCSVData}
-                        startIcon={<DownloadIcon />}
-                        fullWidth
-                        disabled={isDownloadingBGCSV}
-                        sx={{
-                          textTransform: 'none',
-                          borderRadius: 2,
-                          minHeight: 48, // Touch-friendly size
-                          '&:hover': {
-                            backgroundColor: 'primary.light',
-                          },
-                        }}
-                      >
-                        {isDownloadingBGCSV ? (
-                          <CircularProgress color='inherit' size={24} />
-                        ) : (
-                          'Dữ Liệu Đường Máu'
-                        )}
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </AccordionDetails>
-              </Accordion>
-            </Suspense>
-          </Stack>
-        </Box>
-      </Stack>
-
-      {/* Snackbar for Success and Error Messages */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
+        <Typography
+          variant={isSmallScreen ? 'h5' : 'h4'}
+          gutterBottom
+          align='center'
+          sx={{ color: 'text.primary' }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          Cài Đặt
+        </Typography>
+
+        {/* Global Error Alert */}
+        {globalError && (
+          <Alert severity='error' sx={{ mb: 2 }}>
+            {globalError}
+          </Alert>
+        )}
+
+        {/* Data Error Alert */}
+        {dataError && (
+          <Alert severity='warning' sx={{ mb: 2 }}>
+            {dataError} Vui lòng kiểm tra kết nối của bạn hoặc thử lại sau.
+          </Alert>
+        )}
+
+        {/* Update Error Alert */}
+        {updateError && (
+          <Alert severity='error' sx={{ mb: 2 }}>
+            {updateError}
+          </Alert>
+        )}
+
+        <Stack spacing={3} mb={4}>
+          {/* Personal Information Section */}
+          <Box>
+            <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
+              Thông tin cá nhân
+            </Typography>
+            <Divider />
+
+            <Stack spacing={2} mt={2}>
+              {/* Display Name */}
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {isEditing ? (
+                  <TextField
+                    label='Tên'
+                    value={newDisplayName}
+                    onChange={(e) => setNewDisplayName(e.target.value)}
+                    variant='outlined'
+                    size='small'
+                    fullWidth
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveClick();
+                      }
+                    }}
+                  />
+                ) : (
+                  <Typography
+                    variant='body1'
+                    sx={{ color: 'text.primary', flexGrow: 1 }}
+                  >
+                    <strong>Tên: </strong>
+                    {user.displayName}
+                  </Typography>
+                )}
+                {!isEditing && (
+                  <IconButton
+                    aria-label='edit'
+                    onClick={handleEditClick}
+                    sx={{ ml: 1 }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                )}
+              </Box>
+
+              {/* Name Editing Actions */}
+              {isEditing && (
+                <Stack direction='row' spacing={2} mt={1}>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    startIcon={<SaveIcon />}
+                    onClick={handleSaveClick}
+                    disabled={isUpdating}
+                    sx={{
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      minWidth: 100,
+                      minHeight: 48, // Touch-friendly size
+                    }}
+                  >
+                    {isUpdating ? (
+                      <CircularProgress size={24} color='inherit' />
+                    ) : (
+                      'Lưu'
+                    )}
+                  </Button>
+                  <Button
+                    variant='outlined'
+                    color='secondary'
+                    onClick={() => setIsEditing(false)}
+                    sx={{
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      minWidth: 100,
+                      minHeight: 48, // Touch-friendly size
+                    }}
+                    disabled={isUpdating}
+                  >
+                    Hủy
+                  </Button>
+                </Stack>
+              )}
+
+              {/* Email */}
+              <Typography variant='body1' sx={{ color: 'text.primary' }}>
+                <strong>Email: </strong>
+                {user.email}
+              </Typography>
+
+              {/* Logout Button */}
+              <Button
+                variant='outlined'
+                color='secondary'
+                fullWidth
+                onClick={handleLogout}
+                disabled={authLoading}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  minHeight: 48, // Touch-friendly size
+                  '&:hover': {
+                    backgroundColor: 'secondary.main',
+                    color: 'white',
+                  },
+                }}
+              >
+                {authLoading ? <CircularProgress size={24} /> : 'Đăng Xuất'}
+              </Button>
+            </Stack>
+          </Box>
+
+          {/* Data Download Section */}
+          <Box>
+            <Typography variant='h6' sx={{ color: 'text.secondary', mb: 1 }}>
+              Tải xuống dữ liệu
+            </Typography>
+            <Divider />
+
+            <Stack spacing={2} mt={2}>
+              {/* Prominent PDF Download Button */}
+              <Button
+                variant='contained'
+                color='primary'
+                startIcon={<DownloadIcon />}
+                onClick={handleDownloadPDFData}
+                fullWidth
+                disabled={isDownloadingPDF}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  minHeight: 48, // Touch-friendly size
+                  fontSize: '1rem',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                }}
+              >
+                {isDownloadingPDF ? (
+                  <CircularProgress color='inherit' size={24} />
+                ) : (
+                  'Tải Dữ Liệu (PDF)'
+                )}
+              </Button>
+
+              {/* Lazy Loaded Accordion for Other Download Options */}
+              <Suspense
+                fallback={
+                  <Box display='flex' justifyContent='center' mt={2}>
+                    <CircularProgress size={24} />
+                  </Box>
+                }
+              >
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls='additional-downloads-content'
+                    id='additional-downloads-header'
+                  >
+                    <Typography sx={{ color: 'text.secondary' }}>
+                      Thêm Tùy Chọn Tải Xuống
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Stack spacing={2}>
+                      {/* JSON Download */}
+                      <Button
+                        variant='outlined'
+                        color='secondary'
+                        onClick={handleDownloadJSONData}
+                        startIcon={<DownloadIcon />}
+                        fullWidth
+                        disabled={isDownloadingJSON}
+                        sx={{
+                          textTransform: 'none',
+                          borderRadius: 2,
+                          minHeight: 48, // Touch-friendly size
+                          '&:hover': {
+                            backgroundColor: 'secondary.main',
+                            color: 'white',
+                          },
+                        }}
+                      >
+                        {isDownloadingJSON ? (
+                          <CircularProgress color='inherit' size={24} />
+                        ) : (
+                          'Tải Dữ Liệu (JSON)'
+                        )}
+                      </Button>
+
+                      {/* CSV Downloads */}
+                      <Typography variant='subtitle1'>
+                        Tải Dữ Liệu CSV
+                      </Typography>
+                      <Stack spacing={2}>
+                        <Button
+                          variant='outlined'
+                          color='primary'
+                          onClick={handleDownloadBloodPressureCSVData}
+                          startIcon={<DownloadIcon />}
+                          fullWidth
+                          disabled={isDownloadingBPCSV}
+                          sx={{
+                            textTransform: 'none',
+                            borderRadius: 2,
+                            minHeight: 48, // Touch-friendly size
+                            '&:hover': {
+                              backgroundColor: 'primary.light',
+                            },
+                          }}
+                        >
+                          {isDownloadingBPCSV ? (
+                            <CircularProgress color='inherit' size={24} />
+                          ) : (
+                            'Dữ Liệu Huyết Áp'
+                          )}
+                        </Button>
+
+                        <Button
+                          variant='outlined'
+                          color='primary'
+                          onClick={handleDownloadBloodSugarCSVData}
+                          startIcon={<DownloadIcon />}
+                          fullWidth
+                          disabled={isDownloadingBGCSV}
+                          sx={{
+                            textTransform: 'none',
+                            borderRadius: 2,
+                            minHeight: 48, // Touch-friendly size
+                            '&:hover': {
+                              backgroundColor: 'primary.light',
+                            },
+                          }}
+                        >
+                          {isDownloadingBGCSV ? (
+                            <CircularProgress color='inherit' size={24} />
+                          ) : (
+                            'Dữ Liệu Đường Máu'
+                          )}
+                        </Button>
+                      </Stack>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              </Suspense>
+            </Stack>
+          </Box>
+        </Stack>
+
+        {/* Snackbar for Success and Error Messages */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Paper>
   );
 };
 

@@ -34,14 +34,14 @@ const Filters: React.FC<FiltersProps> = ({
     <Box mb={3}>
       <Grid container spacing={2} alignItems='center'>
         {/* Status Filter */}
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid item xs={12} sm={6} md={4} lg={4}>
           <FormControl
             variant='outlined'
             size='small'
             fullWidth
-            sx={{
-              minWidth: 200,
-            }}
+            // sx={{
+            //   minWidth: 200,
+            // }}
           >
             <InputLabel id='status-filter-label'>Trạng thái</InputLabel>
             <Select
@@ -96,7 +96,7 @@ const Filters: React.FC<FiltersProps> = ({
         </Grid>
 
         {/* Reset Filters Button */}
-        <Grid item xs={12} sm={12} md={2} lg={2}>
+        <Grid item xs={12} sm={12} md={4} lg={4}>
           <Tooltip title='Bỏ lọc'>
             <Button
               variant='outlined'
@@ -107,6 +107,8 @@ const Filters: React.FC<FiltersProps> = ({
               disabled={statusFilter === 'Tất cả' && !selectedDate}
               sx={{
                 height: '100%',
+                paddingLeft: 2, // Add padding to the left
+                paddingRight: 2, // Add padding to the right
               }}
             >
               Bỏ lọc
